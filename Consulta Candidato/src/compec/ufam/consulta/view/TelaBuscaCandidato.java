@@ -12,8 +12,8 @@ import com.phill.libs.JPaintedPanel;
 import com.phill.libs.KeyboardAdapter;
 import com.phill.libs.LockedTableModel;
 import com.phill.libs.StringUtils;
-import com.phill.libs.TableMouseListener;
 import com.phill.libs.TableUtils;
+import com.phill.libs.table.JTableMouseListener;
 
 import compec.ufam.consulta.model.*;
 import compec.ufam.consulta.utils.*;
@@ -151,7 +151,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		modelo = new LockedTableModel(colunas);
 		
 		tableResultado = new JTable(modelo);
-		tableResultado.addMouseListener(new TableMouseListener(tableResultado));
+		tableResultado.addMouseListener(new JTableMouseListener(tableResultado));
 		tableResultado.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		final DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();

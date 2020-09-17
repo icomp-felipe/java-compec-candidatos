@@ -2,7 +2,7 @@ package compec.ufam.consulta.view;
 
 import java.awt.*;
 import javax.swing.*;
-import com.phill.libs.CPFParser;
+import com.phill.libs.br.CPFParser;
 import com.phill.libs.JPaintedPanel;
 import com.phill.libs.ResourceManager;
 import com.phill.libs.StringUtils;

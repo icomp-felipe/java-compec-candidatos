@@ -1,10 +1,10 @@
 package compec.ufam.consulta.model;
 
-import com.phill.libs.Resumeable;
 import com.phill.libs.StringUtils;
+import com.phill.libs.table.JTableRowData;
 import com.phill.libs.time.DateUtils;
 
-public class Candidato implements Resumeable {
+public class Candidato implements JTableRowData {
 
 	private String concurso, nome, sexo, nascimento, rg, orgaoEmissor, estadoEmissor;
 	private String cpf, dataInscricao, rua, numCasa, bairro, cep, cidade, estado, fone, email;
@@ -151,7 +151,7 @@ public class Candidato implements Resumeable {
 	/***************** Bloco de Getters Personalizados ***************************************/
 	
 	@Override
-	public Object[] getResume() {
+	public Object[] getRowData() {
 		return new Object[]{concurso,getCodigoAsString(),getNome(true),getDataNascimento(),rg,getCPF(true)};
 	}
 	
