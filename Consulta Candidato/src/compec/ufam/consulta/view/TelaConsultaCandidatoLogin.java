@@ -4,9 +4,10 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import compec.ufam.consulta.model.*;
-import compec.ufam.consulta.utils.*;
-import com.phill.libs.KeyboardAdapter;
 import com.phill.libs.ResourceManager;
+import com.phill.libs.ui.AlertDialog;
+import com.phill.libs.ui.GraphicsHelper;
+import com.phill.libs.ui.KeyReleasedListener;
 
 /** Classe TelaLogin - cria um ambiente gráfico para o usuário fazer login no sistema
  *  @author Felipe André Souza da Silva 
@@ -36,9 +37,9 @@ public class TelaConsultaCandidatoLogin extends JFrame {
 	public TelaConsultaCandidatoLogin() {
 		super("Tela de Login");
 		
-		Font  dialg = GraphicsHelper.getFont ();
-		Color color = GraphicsHelper.getColor();
-		Font fonte = GraphicsHelper.getFont(20);
+		Font  dialg = GraphicsHelper.getInstance().getFont ();
+		Color color = GraphicsHelper.getInstance().getColor();
+		Font fonte = GraphicsHelper.getInstance().getFont(20);
 		
 		Container container = getContentPane();
 		container.setLayout(null);		
@@ -73,7 +74,7 @@ public class TelaConsultaCandidatoLogin extends JFrame {
 		textSenha.setToolTipText("Digite aqui sua senha");
 		textSenha.setBounds(341, 134, 193, 24);
 		
-		KeyListener listener = (KeyboardAdapter) (event) -> { if (event.getKeyCode() == KeyEvent.VK_ENTER) botaoEntrar.doClick(); };
+		KeyListener listener = (KeyReleasedListener) (event) -> { if (event.getKeyCode() == KeyEvent.VK_ENTER) botaoEntrar.doClick(); };
 		textSenha.addKeyListener(listener);
 				
 		container.add(labelImagem);
@@ -104,7 +105,7 @@ public class TelaConsultaCandidatoLogin extends JFrame {
 	private void firstAccess(JFrame frame) {
 		
 		if (UsuarioDAO.firstAccess()) {
-			AlertDialog.informativo("Bem vindo ao sistema de busca de candidatos!\nA seguir configure seu login e senha!");
+			AlertDialog.info("Bem vindo ao sistema de busca de candidatos!\nA seguir configure seu login e senha!");
 			new TelaCriaUsuario(frame);
 		}
 		else
@@ -117,7 +118,7 @@ public class TelaConsultaCandidatoLogin extends JFrame {
 		String senha = new String(textSenha.getPassword());
 		
 		if (!UsuarioDAO.tryLogin(login, senha))
-			AlertDialog.erro("Usuário e/ou senha inválidos!");
+			AlertDialog.error("Usuário e/ou senha inválidos!");
 		else {
 			new TelaBuscaCandidato();
 			dispose();

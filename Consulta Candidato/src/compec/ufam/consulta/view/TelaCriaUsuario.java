@@ -3,11 +3,12 @@ package compec.ufam.consulta.view;
 import java.awt.*;
 import javax.swing.*;
 
-import com.phill.libs.KeyboardAdapter;
+import com.phill.libs.ui.AlertDialog;
+import com.phill.libs.ui.GraphicsHelper;
+import com.phill.libs.ui.KeyReleasedListener;
 
 import java.awt.event.*;
 import compec.ufam.consulta.model.*;
-import compec.ufam.consulta.utils.*;
 
 public class TelaCriaUsuario extends JFrame {
 
@@ -22,12 +23,12 @@ public class TelaCriaUsuario extends JFrame {
 		
 		this.frame = frame;
 		
-		Font  fonte = GraphicsHelper.getFont();
-		Color color = GraphicsHelper.getColor();
+		Font  fonte = GraphicsHelper.getInstance().getFont();
+		Color color = GraphicsHelper.getInstance().getColor();
 		
 		JPanel painelLogin = new JPanel();
 		painelLogin.setLayout(null);
-		painelLogin.setBorder(GraphicsHelper.getTitledBorder("Digite seu login"));
+		painelLogin.setBorder(GraphicsHelper.getInstance().getTitledBorder("Digite seu login"));
 		painelLogin.setBounds(12, 25, 272, 61);
 		getContentPane().add(painelLogin);
 		
@@ -38,7 +39,7 @@ public class TelaCriaUsuario extends JFrame {
 		painelLogin.add(textLogin);
 		
 		JPanel painelSenha = new JPanel();
-		painelSenha.setBorder(GraphicsHelper.getTitledBorder("Digite sua senha"));
+		painelSenha.setBorder(GraphicsHelper.getInstance().getTitledBorder("Digite sua senha"));
 		painelSenha.setBounds(12, 95, 272, 61);
 		getContentPane().add(painelSenha);
 		painelSenha.setLayout(null);
@@ -51,7 +52,7 @@ public class TelaCriaUsuario extends JFrame {
 		
 		JPanel painelConfirmaSenha = new JPanel();
 		painelConfirmaSenha.setLayout(null);
-		painelConfirmaSenha.setBorder(GraphicsHelper.getTitledBorder("Confirme sua senha"));
+		painelConfirmaSenha.setBorder(GraphicsHelper.getInstance().getTitledBorder("Confirme sua senha"));
 		painelConfirmaSenha.setBounds(12, 165, 272, 61);
 		getContentPane().add(painelConfirmaSenha);
 		
@@ -66,7 +67,7 @@ public class TelaCriaUsuario extends JFrame {
 		botaoSalvar.setBounds(148, 233, 90, 25);
 		getContentPane().add(botaoSalvar);
 		
-		KeyListener listener = (KeyboardAdapter) (event) -> { if (event.getKeyCode() == KeyEvent.VK_ENTER) botaoSalvar.doClick(); };
+		KeyListener listener = (KeyReleasedListener) (event) -> { if (event.getKeyCode() == KeyEvent.VK_ENTER) botaoSalvar.doClick(); };
 		textSenhaTwice.addKeyListener(listener);
 		
 		JButton botaoSair = new JButton("Sair");
@@ -100,7 +101,7 @@ public class TelaCriaUsuario extends JFrame {
 			dispose();
 		}
 		else
-			AlertDialog.erro("Senhas não conferem!");
+			AlertDialog.error("Senhas não conferem!");
 		
 	}
 

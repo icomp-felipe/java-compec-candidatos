@@ -8,12 +8,15 @@ import java.io.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
-import com.phill.libs.JPaintedPanel;
-import com.phill.libs.KeyboardAdapter;
-import com.phill.libs.LockedTableModel;
 import com.phill.libs.StringUtils;
-import com.phill.libs.TableUtils;
+import com.phill.libs.br.CPFTextField;
 import com.phill.libs.table.JTableMouseListener;
+import com.phill.libs.table.LockedTableModel;
+import com.phill.libs.table.TableUtils;
+import com.phill.libs.ui.AlertDialog;
+import com.phill.libs.ui.GraphicsHelper;
+import com.phill.libs.ui.JPaintedPanel;
+import com.phill.libs.ui.KeyReleasedListener;
 
 import compec.ufam.consulta.model.*;
 import compec.ufam.consulta.utils.*;
@@ -49,8 +52,8 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 		super("Busca de Candidato");
 		
-		Font  fonte = GraphicsHelper.getFont();
-		Color color = GraphicsHelper.getColor();
+		Font  fonte = GraphicsHelper.getInstance().getFont();
+		Color color = GraphicsHelper.getInstance().getColor();
 		Color label = new Color(32,43,194);
 		
 		Dimension d = new Dimension(800,500);
@@ -67,7 +70,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 		JPanel painelBusca = new JPanel();
 		painelBusca.setOpaque(false);
-		painelBusca.setBorder(GraphicsHelper.getTitledBorder("Busca"));
+		painelBusca.setBorder(GraphicsHelper.getInstance().getTitledBorder("Busca"));
 		painelBusca.setBounds(12, 12, 776, 83);
 		painelMaster.add(painelBusca);
 		painelBusca.setLayout(null);
@@ -92,7 +95,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		labelCPF.setBounds(12, 53, 70, 15);
 		painelBusca.add(labelCPF);
 		
-		textCPF = new JFormattedTextField(GraphicsHelper.getMascara("###.###.###-##"));
+		textCPF = new CPFTextField();
 		textCPF.setFocusLostBehavior(JFormattedTextField.PERSIST);
 		textCPF.setEditable(false);
 		textCPF.setFont(fonte);
@@ -135,7 +138,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		botaoLimpar.setBounds(677, 51, 87, 20);
 		painelBusca.add(botaoLimpar);
 		
-		KeyListener keyListener = (KeyboardAdapter) (event) -> { if (event.getKeyCode() == KeyEvent.VK_ENTER) botaoBuscar.doClick(); };
+		KeyListener keyListener = (KeyReleasedListener) (event) -> { if (event.getKeyCode() == KeyEvent.VK_ENTER) botaoBuscar.doClick(); };
 		
 		textNome.addKeyListener(keyListener);
 		textCPF .addKeyListener(keyListener);
@@ -143,7 +146,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 		JPanel painelResultado = new JPanel();
 		painelResultado.setOpaque(false);
-		painelResultado.setBorder(GraphicsHelper.getTitledBorder("Resultados"));
+		painelResultado.setBorder(GraphicsHelper.getInstance().getTitledBorder("Resultados"));
 		painelResultado.setBounds(12, 99, 776, 315);
 		painelMaster.add(painelResultado);
 		painelResultado.setLayout(null);
@@ -285,7 +288,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 			try {
 				FichaCandidato.show(candidato);
 			} catch (Exception exception) {
-				AlertDialog.erro("Falha ao gerar visualização!");
+				AlertDialog.error("Falha ao gerar visualização!");
 			}
 			
 		}
@@ -384,7 +387,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		final String message = "Sistema de Consulta de Candidatos v.1.5\n"
 							 + "Criado por: Felipe André\n"
 							 + "2016(c) Todos os direitos reservados";
-		AlertDialog.informativo(message);
+		AlertDialog.info(message);
 	}
 	
 	/** Limpa os campos de texto */

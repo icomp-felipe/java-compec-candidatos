@@ -3,6 +3,7 @@ package compec.ufam.consulta.model;
 import java.io.*;
 import java.util.*;
 import com.phill.libs.*;
+import com.phill.libs.files.PhillFileUtils;
 
 public class SituacaoDAO {
 

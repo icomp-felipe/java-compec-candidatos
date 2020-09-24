@@ -3,6 +3,7 @@ package compec.ufam.consulta.utils;
 import java.io.*;
 import com.phill.libs.*;
 import com.phill.libs.time.*;
+import com.phill.libs.ui.AlertDialog;
 
 public class StderrManager  extends OutputStream {
 	
@@ -16,7 +17,7 @@ public class StderrManager  extends OutputStream {
 			outputStream = getStackTraceStream();
 		}
 		catch (IOException exception) {
-			AlertDialog.erro("Falha ao criar o arquivo de log!");
+			AlertDialog.error("Falha ao criar o arquivo de log!");
 		}
 		
 	}
@@ -66,7 +67,7 @@ public class StderrManager  extends OutputStream {
 	/** Cria o arquivo de debug */
 	private File getStackTraceFile() {
 		
-		String curdate  = DateUtils.getSystemDate("dd.MM.yyyy_HH.mm.ss");
+		String curdate  = PhillsDateUtils.now("dd.MM.yyyy_HH.mm.ss");
 		String filename = String.format("stackTrace_%s.txt",curdate);
 		String stackDir = ResourceManager.getResource("tracing/");
 		

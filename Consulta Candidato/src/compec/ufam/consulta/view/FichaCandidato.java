@@ -57,9 +57,9 @@ public class FichaCandidato {
 			parameters.put("PAR_RG_ORGAO", candidato.getOrgaoEmissor());
 			parameters.put("PAR_RG_UF",candidato.getUF());
 			
-			parameters.put("PAR_LOGRADOURO", StringUtils.firstLetterLowerCase(candidato.getLogradouro()));
+			parameters.put("PAR_LOGRADOURO", StringUtils.BR.normaliza(candidato.getLogradouro()));
 			parameters.put("PAR_NUMERO", candidato.getNumeroCasa());
-			parameters.put("PAR_BAIRRO", StringUtils.firstLetterLowerCase(candidato.getBairro()));
+			parameters.put("PAR_BAIRRO", StringUtils.BR.normaliza(candidato.getBairro()));
 			parameters.put("PAR_CEP",candidato.getCEP(true));
 			parameters.put("PAR_MUNICIPIO", candidato.getCidadeUF());
 			

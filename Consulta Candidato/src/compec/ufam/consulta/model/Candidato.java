@@ -1,8 +1,9 @@
 package compec.ufam.consulta.model;
 
 import com.phill.libs.StringUtils;
+import com.phill.libs.br.CPFParser;
 import com.phill.libs.table.JTableRowData;
-import com.phill.libs.time.DateUtils;
+import com.phill.libs.time.PhillsDateParser;
 
 public class Candidato implements JTableRowData {
 
@@ -55,7 +56,7 @@ public class Candidato implements JTableRowData {
 	}
 	
 	public String getNome(boolean isUserFormat) {
-		return (isUserFormat) ? StringUtils.firstLetterLowerCase(nome) : nome;
+		return (isUserFormat) ? StringUtils.BR.normaliza(nome) : nome;
 	}
 	
 	public String getSexo() {
@@ -79,7 +80,7 @@ public class Candidato implements JTableRowData {
 	}
 	
 	public String getCPF(boolean isUserFormat) {
-		return (isUserFormat) ? StringUtils.parseCPF(cpf) : cpf;
+		return (isUserFormat) ? CPFParser.format(cpf) : cpf;
 	}
 	
 	public String getDataInscricao() {
@@ -103,11 +104,11 @@ public class Candidato implements JTableRowData {
 	}
 	
 	public String getCEP(boolean isUserFormat) {
-		return (isUserFormat) ? StringUtils.parseCEP(cep) : cep;
+		return (isUserFormat) ? StringUtils.BR.formataCEP(cep) : cep;
 	}
 	
 	public String getCidade() {
-		return StringUtils.firstLetterLowerCase(cidade);
+		return StringUtils.BR.normaliza(cidade);
 	}
 	
 	public String getFone() {
@@ -132,9 +133,9 @@ public class Candidato implements JTableRowData {
 		
 		switch (versao) {
 			case ANTIGO:
-				return DateUtils.recoverMySQLDate(date);
+				return PhillsDateParser.convert(date, "yyyy-MM-dd","dd/MM/yyyy");
 			case NOVO:
-				return DateUtils.recoverXLSDate(date);
+				return PhillsDateParser.convert(date, "ddMMyyyy"  ,"dd/MM/yyyy");
 		}
 		
 		return null;

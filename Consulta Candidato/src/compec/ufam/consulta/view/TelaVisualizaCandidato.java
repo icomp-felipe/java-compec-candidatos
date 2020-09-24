@@ -3,12 +3,13 @@ package compec.ufam.consulta.view;
 import java.awt.*;
 import javax.swing.*;
 import com.phill.libs.br.CPFParser;
-import com.phill.libs.JPaintedPanel;
 import com.phill.libs.ResourceManager;
-import com.phill.libs.StringUtils;
-import com.phill.libs.time.DateUtils;
+import com.phill.libs.time.PhillsDateUtils;
+import com.phill.libs.ui.AlertDialog;
+import com.phill.libs.ui.GraphicsHelper;
+import com.phill.libs.ui.JPaintedPanel;
+
 import compec.ufam.consulta.model.*;
-import compec.ufam.consulta.utils.*;
 
 /** Classe que contém a implementação do visualizador de candidato.
  *  @author Felipe André
@@ -29,8 +30,8 @@ public class TelaVisualizaCandidato extends JFrame {
 		JPanel painelMaster = new JPaintedPanel("img/background-visualiza.jpg",d);
 		setContentPane(painelMaster);
 		
-		final Font  fonte = GraphicsHelper.getFont();
-		final Color color = GraphicsHelper.getColor();
+		final Font  fonte = GraphicsHelper.getInstance().getFont();
+		final Color color = GraphicsHelper.getInstance().getColor();
 		final Color label = new Color(32,43,194);
 		
 		setSize(d);
@@ -41,7 +42,7 @@ public class TelaVisualizaCandidato extends JFrame {
 		
 		JPanel painelCandidato = new JPanel();
 		painelCandidato.setOpaque(false);
-		painelCandidato.setBorder(GraphicsHelper.getTitledBorder("Candidato"));
+		painelCandidato.setBorder(GraphicsHelper.getInstance().getTitledBorder("Candidato"));
 		painelCandidato.setBounds(12, 12, 696, 147);
 		painelMaster.add(painelCandidato);
 		painelCandidato.setLayout(null);
@@ -161,7 +162,7 @@ public class TelaVisualizaCandidato extends JFrame {
 		textEmail.setBounds(332, 109, 315, 23);
 		painelCandidato.add(textEmail);
 		
-		Icon reportIcon  = ResourceManager.getResizedIcon("icon/report.png",16,16);
+		Icon reportIcon  = ResourceManager.getIcon("icon/report.png",16,16);
 		
 		JButton botaoFicha = new JButton(reportIcon);
 		botaoFicha.addActionListener((event) -> fichaCandidato(candidato));
@@ -171,7 +172,7 @@ public class TelaVisualizaCandidato extends JFrame {
 		
 		JPanel painelConcurso = new JPanel();
 		painelConcurso.setOpaque(false);
-		painelConcurso.setBorder(GraphicsHelper.getTitledBorder("Concurso"));
+		painelConcurso.setBorder(GraphicsHelper.getInstance().getTitledBorder("Concurso"));
 		painelConcurso.setBounds(12, 158, 696, 59);
 		painelMaster.add(painelConcurso);
 		painelConcurso.setLayout(null);
@@ -247,7 +248,7 @@ public class TelaVisualizaCandidato extends JFrame {
 		try {
 			FichaCandidato.show(candidato);
 		} catch (Exception exception) {
-			AlertDialog.erro("Falha ao gerar visualização!");
+			AlertDialog.error("Falha ao gerar visualização!");
 		}
 		
 	}
@@ -286,9 +287,9 @@ public class TelaVisualizaCandidato extends JFrame {
 		String nome = candidato.getNome(false);
 		String nasc = candidato.getDataNascimento();
 		
-		String message = StringUtils.detectSpaceBetweenWords(nome);
+		String message = detectSpaceBetweenWorsds(nome);
 		
-		int idadeCandidato = DateUtils.yearsSince(nasc);
+		int idadeCandidato = PhillsDateUtils.yearsSince(nasc,"yyyy-MM-dd");
 		
 		// PUT SOME CODE HERE!
 		
@@ -305,6 +306,25 @@ public class TelaVisualizaCandidato extends JFrame {
 			setError(textNome, message);
 		
 		verificaRG(candidato);
+	}
+	
+	public String detectSpaceBetweenWorsds(String phrase) {
+		
+		String retorno = null;
+		int index = phrase.indexOf("  ");
+		
+		if (index != -1) {
+			
+			String first  = phrase.substring(0,index).trim();
+			String second = phrase.substring(index).trim();
+			
+			retorno = String.format("Há múltiplos espaços entre \"%s\" e \"%s\"", first,second);
+		}
+		
+		if (phrase.matches(".*\\d+.*"))
+			retorno += "Há números cadastrados no nome do candidato!";
+		
+		return retorno;
 	}
 	
 	private void verificaRG(Candidato candidato) {

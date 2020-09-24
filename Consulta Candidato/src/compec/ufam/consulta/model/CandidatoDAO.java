@@ -4,8 +4,8 @@ import jxl.*;
 import java.io.*;
 import java.util.*;
 
-import com.phill.libs.PhillFileUtils;
 import com.phill.libs.ResourceManager;
+import com.phill.libs.files.PhillFileUtils;
 
 public class CandidatoDAO {
 	
@@ -40,7 +40,7 @@ public class CandidatoDAO {
 	/** Carrega todas as planilhas de candidatos para a lista em memória */
 	public void load() {
 		
-		File[] listaArquivos = PhillFileUtils.orderedListFiles(sheetsDirectory);
+		File[] listaArquivos = PhillFileUtils.listFilesOrdered(sheetsDirectory,PhillFileUtils.ASCENDING);
 		
 		for (File planilha: listaArquivos) {
 			

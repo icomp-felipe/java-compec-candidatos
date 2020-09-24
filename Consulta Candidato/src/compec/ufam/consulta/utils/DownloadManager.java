@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import org.apache.commons.io.*;
 import com.phill.libs.*;
+import com.phill.libs.ui.AlertDialog;
 
 import jcifs.netbios.NbtAddress;
 
@@ -19,7 +20,7 @@ public class DownloadManager {
 	public static void updateSheets() {
 		try { new DownloadManager().downloadSheets(); }
 		catch (IOException exception) {
-			AlertDialog.showMessageForAWhile("Falha ao baixar planilhas!");
+			AlertDialog.timedDisplay("Falha ao baixar planilhas!",5);
 		}
 	}
 	
@@ -27,7 +28,7 @@ public class DownloadManager {
 		System.out.print("Buscando servidor...");
 		System.out.flush();
 		
-		String hostname = PropertiesManager.getProperty("net.home");
+		String hostname = PropertiesManager.getString("net.home",null);
 		
 		try {
 			String serverIP = NbtAddress.getByName(hostname).getHostAddress();
@@ -52,7 +53,7 @@ public class DownloadManager {
 			downloadFile(inputFile, outputFile);
 		}
 		
-		AlertDialog.showMessageForAWhile("Planilhas baixadas com sucesso!");
+		AlertDialog.timedDisplay("Planilhas baixadas com sucesso!",5);
 	}
 	
 	private URL getSourceFile(String remoteSite) throws MalformedURLException {
