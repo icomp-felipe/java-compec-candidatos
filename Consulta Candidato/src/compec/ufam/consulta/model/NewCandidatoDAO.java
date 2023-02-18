@@ -1,0 +1,142 @@
+package compec.ufam.consulta.model;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+
+import com.phill.libs.ResourceManager;
+import com.phill.libs.files.PhillFileUtils;
+
+public class NewCandidatoDAO {
+
+	public static void main(String[] args) throws FileNotFoundException, IOException {
+		Map<String, List<NewCandidato>> map = load();
+		System.out.println(map.get("PSLIND23").get(0).getNome());
+	}
+	
+	private static final File sheets = ResourceManager.getResourceAsFile("sheets");
+	
+	private static final String[] columnNames = { "NOME_CAND", "SEXO_CAND", "NASCIMENTO_CAND", "RG_CAND", "UF_RG_CAND", "CPF_CAND", "LOGRADOURO", "NUMERO", "BAIRRO", "CEP",
+												  "CIDADE_LOGRADOURO", "UF_LOGRADOURO", "TELEFONE", "EMAIL", "DEFICIENCIA_?", "COD_CONCURSO", "NUM_INSCRICAO", "DATA_INSC",
+												  "CURSO", "ACAO_AFIRMATIVA", "CIDADE_CONCURSO", "SITUACAO_PAGAMENTO" };
+	
+	
+	public static Map<String, List<NewCandidato>> load() throws FileNotFoundException, IOException {
+		
+		// Instanciando o mapa
+		Map<String, List<NewCandidato>> mapaCandidatos = new HashMap<String, List<NewCandidato>>();
+		
+		// Listando planilhas xls dentro do diretório 'sheets'
+		File[] listaArquivos = PhillFileUtils.listFilesOrdered(sheets, PhillFileUtils.ASCENDING);
+		
+		// Povoando o mapa com os dados extraídos das planilhas
+		for (File planilha: listaArquivos)
+			if (planilha.getName().endsWith(".xls"))
+				loadFromSheet(planilha, mapaCandidatos);
+				
+		
+		return mapaCandidatos;
+	}
+
+	private static void loadFromSheet(final File planilha, final Map<String, List<NewCandidato>> mapaCandidatos) throws FileNotFoundException, IOException {
+		
+		// Abrindo a planilha
+		HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(planilha));
+		HSSFSheet sheet = workbook.getSheetAt(0);
+		Iterator<Row> rowIterator = sheet.iterator();
+		
+		// Instanciando lista de candidatos
+		List<NewCandidato> listaCandidatos = new ArrayList<NewCandidato>();
+		
+		// Lendo o cabeçalho
+		Row   header    = rowIterator.next();
+		int[] columnSet = getColumnSet(header);
+		
+		// Recupera o código do concurso
+		final String concurso = sheet.getRow(1).getCell(0).getStringCellValue();
+		
+		// Iterando nas linhas da planilha, recuperando candidatos
+		while (rowIterator.hasNext()) {
+			
+			NewCandidato candidato = loadFromRow(rowIterator.next(), columnSet);
+			listaCandidatos.add(candidato);
+			
+		}
+		
+		// Registrando a lista de candidatos no mapa
+		mapaCandidatos.put(concurso, listaCandidatos);
+		
+	}
+	
+	private static NewCandidato loadFromRow(final Row row, final int[] columnSet) {
+		
+		final NewCandidato candidato = new NewCandidato();
+		
+		candidato.setNome             (row.getCell(columnSet[ 0]).getStringCellValue());
+		candidato.setSexo             (row.getCell(columnSet[ 1]).getStringCellValue());
+		candidato.setDataNascimento   (row.getCell(columnSet[ 2]).getStringCellValue());
+		candidato.setRG               (row.getCell(columnSet[ 3]).getStringCellValue());
+		candidato.setRGUF             (row.getCell(columnSet[ 4]).getStringCellValue());
+		candidato.setCPF              (row.getCell(columnSet[ 5]).getStringCellValue());
+		candidato.setLogradouro       (row.getCell(columnSet[ 6]).getStringCellValue());
+		candidato.setNumero           (row.getCell(columnSet[ 7]).getStringCellValue());
+		candidato.setBairro           (row.getCell(columnSet[ 8]).getStringCellValue());
+		candidato.setCEP              (row.getCell(columnSet[ 9]).getStringCellValue());
+		candidato.setCidade           (row.getCell(columnSet[10]).getStringCellValue());
+		candidato.setUF               (row.getCell(columnSet[11]).getStringCellValue());
+		candidato.setTelefone         (row.getCell(columnSet[12]).getStringCellValue());
+		candidato.setEmail            (row.getCell(columnSet[13]).getStringCellValue());
+		candidato.setTemDeficiencia   (row.getCell(columnSet[14]).getStringCellValue());
+		candidato.setInscricao        (row.getCell(columnSet[16]).getStringCellValue());
+		candidato.setDataInscricao    (row.getCell(columnSet[17]).getStringCellValue());
+		candidato.setCurso            (row.getCell(columnSet[18]).getStringCellValue());
+		candidato.setAcaoAfirmativa   (row.getCell(columnSet[19]).getStringCellValue());
+		candidato.setCidadeConcurso   (row.getCell(columnSet[20]).getStringCellValue());
+		candidato.setSituacaoPagamento(row.getCell(columnSet[21]).getStringCellValue());
+		
+		return candidato;
+	}
+
+	private static int[] getColumnSet(final Row header) {
+	
+		// Recupera a quantidade de nomes de campos a serem buscados
+		final int campos = columnNames.length;
+		
+		// Recupera a quantidade de colunas do cabeçalho
+		final int colunas = header.getPhysicalNumberOfCells();
+		
+		// Inicializando o array de índices
+		final int[] indices = new int[campos];
+		
+		// Iterando sobre o array de nomes de colunas
+		for (int iNomeColuna = 0; iNomeColuna < campos; iNomeColuna++) {
+			
+			// Iterando sobre as colunas físicas do Excel
+			for (int iColuna = 0; iColuna < colunas; iColuna++) {
+				
+				if (header.getCell(iColuna).getStringCellValue().equals(columnNames[iNomeColuna])) {
+					
+					indices[iNomeColuna] = iColuna;
+					
+					break;
+					
+				}
+				
+			}
+			
+		}
+		
+		return indices;
+	}
+
+}
