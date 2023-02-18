@@ -1,8 +1,11 @@
 package compec.ufam.consulta.model;
 
-import jxl.*;
 import java.io.*;
 import java.util.*;
+
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
 
 import com.phill.libs.ResourceManager;
 import com.phill.libs.files.PhillFileUtils;
@@ -44,8 +47,12 @@ public class CandidatoDAO {
 		
 		for (File planilha: listaArquivos) {
 			
-			Sistema versao = getVersaoSistema(planilha);
-			loadCandidatosFromFile(planilha, versao);
+			if (planilha.getName().endsWith(".xls")) {
+				
+				Sistema versao = getVersaoSistema(planilha);
+				loadCandidatosFromFile(planilha, versao);
+				
+			}
 			
 		}
 		
@@ -87,16 +94,17 @@ public class CandidatoDAO {
 		try {
 			
 			System.out.print("Carregando planilha \"" + planilha.getName() + "\"...");
-			Workbook workbook = Workbook.getWorkbook(planilha);
+			HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(planilha));
 			
-			final Sheet sheet = workbook.getSheet(0);
-			final int rows = sheet.getRows();
+			final HSSFSheet sheet = workbook.getSheetAt(0);
+			Iterator<Row> rowIterator                 = sheet.iterator();
 			
 			/** Lê o concurso */
-			listaConcursos.add(sheet.getCell(0,1).getContents());
+			rowIterator.next();
+			listaConcursos.add(sheet.getRow(1).getCell(0).getStringCellValue());
 			
-			for(int i = 1; i < rows; i++) {
-				Candidato candidato = getCandidatoFromRow(sheet,i,versao);
+			while (rowIterator.hasNext()) {
+				Candidato candidato = getCandidatoFromRow(rowIterator.next(),versao);
 				listaCandidatos.add(candidato);
 			}
 			
@@ -111,33 +119,33 @@ public class CandidatoDAO {
 	}
 	
 	/** Carrega um candidato a partir de uma linha da planilha */
-	private Candidato getCandidatoFromRow(Sheet sheet, int currentRow, Sistema versao) {
+	private Candidato getCandidatoFromRow(Row sheet, Sistema versao) {
 		
 		final int[] rowSet = versao.getRowSet();
 		
-		String concurso   = sheet.getCell(rowSet[0], currentRow).getContents();
-		int codigo		  = Integer.parseInt(sheet.getCell(rowSet[1], currentRow).getContents());
-		String nome       = sheet.getCell(rowSet[2], currentRow).getContents();
-		String sexo	 	  = sheet.getCell(rowSet[3], currentRow).getContents();
-		String nascimento = sheet.getCell(rowSet[4], currentRow).getContents();
+		String concurso   = sheet.getCell(rowSet[0]).getStringCellValue();
+		int codigo		  = Integer.parseInt(sheet.getCell(rowSet[1]).getStringCellValue());
+		String nome       = sheet.getCell(rowSet[2]).getStringCellValue();
+		String sexo	 	  = sheet.getCell(rowSet[3]).getStringCellValue();
+		String nascimento = sheet.getCell(rowSet[4]).getStringCellValue();
 		
-		String rg			 = sheet.getCell(rowSet[5], currentRow).getContents();
-		String orgaoEmissor  = sheet.getCell(rowSet[6], currentRow).getContents();
-		String estadoEmissor = sheet.getCell(rowSet[7], currentRow).getContents();
-		String cpf 			 = sheet.getCell(rowSet[8], currentRow).getContents();
-		String dataInscricao = sheet.getCell(rowSet[9], currentRow).getContents();
+		String rg			 = sheet.getCell(rowSet[5]).getStringCellValue();
+		String orgaoEmissor  = sheet.getCell(rowSet[6]).getStringCellValue();
+		String estadoEmissor = sheet.getCell(rowSet[7]).getStringCellValue();
+		String cpf 			 = sheet.getCell(rowSet[8]).getStringCellValue();
+		String dataInscricao = sheet.getCell(rowSet[9]).getStringCellValue();
 		
-		Situacao situacao    = SituacaoDAO.getSituacao(sheet.getCell(rowSet[10], currentRow).getContents());
+		String situacao    = sheet.getCell(rowSet[10]).getStringCellValue();
 		
-		String rua 	   = sheet.getCell(rowSet[11], currentRow).getContents();
-		String numCasa = sheet.getCell(rowSet[12], currentRow).getContents();
-		String bairro  = sheet.getCell(rowSet[13], currentRow).getContents();
-		String cep 	   = sheet.getCell(rowSet[14], currentRow).getContents();
+		String rua 	   = sheet.getCell(rowSet[11]).getStringCellValue();
+		String numCasa = sheet.getCell(rowSet[12]).getStringCellValue();
+		String bairro  = sheet.getCell(rowSet[13]).getStringCellValue();
+		String cep 	   = sheet.getCell(rowSet[14]).getStringCellValue();
 		
-		String cidade = sheet.getCell(rowSet[15], currentRow).getContents();
-		String estado = sheet.getCell(rowSet[16], currentRow).getContents();
-		String fone   = sheet.getCell(rowSet[17], currentRow).getContents();
-		String email  = sheet.getCell(rowSet[18], currentRow).getContents();
+		String cidade = sheet.getCell(rowSet[15]).getStringCellValue();
+		String estado = sheet.getCell(rowSet[16]).getStringCellValue();
+		String fone   = sheet.getCell(rowSet[17]).getStringCellValue();
+		String email  = sheet.getCell(rowSet[18]).getStringCellValue();
 		
 		Candidato candidato = new Candidato(concurso, codigo, nome, sexo, nascimento, rg, orgaoEmissor, estadoEmissor, cpf, dataInscricao, situacao, rua, numCasa, bairro, cep, cidade, estado, fone, email, versao);
 		
@@ -146,20 +154,7 @@ public class CandidatoDAO {
 	
 	/** Identifica a versão do sistema de origem da planilha */
 	private Sistema getVersaoSistema(File arquivo) {
-		
-		String filename = arquivo.getName().toLowerCase();
-		
-		if (!filename.endsWith(".xls"))
-			return null;
-
-		if (filename.contains("newsys"))
-			return Sistema.NOVO;
-		
-		if (filename.contains("oldsys"))
-			return Sistema.ANTIGO;
-		
-		return null;
-		
+		return Sistema.NOVO;
 	}
 	
 }

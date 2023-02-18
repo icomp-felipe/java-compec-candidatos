@@ -10,12 +10,12 @@ public class Candidato implements JTableRowData {
 	private String concurso, nome, sexo, nascimento, rg, orgaoEmissor, estadoEmissor;
 	private String cpf, dataInscricao, rua, numCasa, bairro, cep, cidade, estado, fone, email;
 	private int codigo;
-	private Situacao situacao;
+	private String situacao;
 	private Sistema versao;
 	
 	public Candidato(String concurso, int codigo, String nome, String sexo, String nascimento,
 					 String rg, String orgaoEmissor, String estadoEmissor, String cpf, String dataInscricao,
-					 Situacao situacao, String rua, String numCasa, String bairro, String cep, String cidade,
+					 String situacao, String rua, String numCasa, String bairro, String cep, String cidade,
 					 String estado, String fone, String email, Sistema versao) {
 		
 		this.concurso = concurso;
@@ -84,10 +84,11 @@ public class Candidato implements JTableRowData {
 	}
 	
 	public String getDataInscricao() {
-		return getFormattedDate(dataInscricao);
+		System.out.println(dataInscricao); System.out.flush();
+		return PhillsDateParser.convert(dataInscricao, "yyyy-MM-dd HH:mm:ss.SSS", "dd/MM/yyyy");
 	}
 	
-	public Situacao getSituacao() {
+	public String getSituacao() {
 		return situacao;
 	}
 	

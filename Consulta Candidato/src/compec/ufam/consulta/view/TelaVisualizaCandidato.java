@@ -258,8 +258,6 @@ public class TelaVisualizaCandidato extends JFrame {
 		
 		if (candidato == null) return;
 		
-		Situacao situacao = candidato.getSituacao();
-		
 		textNome.setText(candidato.getNome(true));
 		textSexo.setText(candidato.getSexo());
 		textNascimento.setText(candidato.getDataNascimento());
@@ -272,11 +270,11 @@ public class TelaVisualizaCandidato extends JFrame {
 		textNomeConcurso.setText(candidato.getConcurso());
 		textCodigo.setText(candidato.getCodigoAsString());
 		textInscricao.setText(candidato.getDataInscricao());
-		textSituacao.setText(situacao.getID());
+		textSituacao.setText("0");
 		
-		textSituacao.setToolTipText(situacao.getResumo());
+		textSituacao.setToolTipText(candidato.getSituacao());
 		
-		validaInfos(candidato);
+		//validaInfos(candidato);
 		
 	}
 	

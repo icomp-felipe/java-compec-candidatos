@@ -15,7 +15,6 @@ import com.phill.libs.table.LockedTableModel;
 import com.phill.libs.table.TableUtils;
 import com.phill.libs.ui.AlertDialog;
 import com.phill.libs.ui.GraphicsHelper;
-import com.phill.libs.ui.JPaintedPanel;
 import com.phill.libs.ui.KeyReleasedListener;
 
 import compec.ufam.consulta.model.*;
@@ -41,9 +40,8 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 	private final JButton botaoLimpar, botaoBuscar;
 	private final JLabel labelInfos, textQtd;
 	
-	private final PrintStream stdout, stderr;
+	//private final PrintStream stdout, stderr;
 	private JRadioButtonMenuItem itemRuntime;
-	private JPanel painelMaster;
 	
 	private ArrayList<Candidato> listaFiltrados;
 
@@ -56,23 +54,18 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		Color color = GraphicsHelper.getInstance().getColor();
 		Color label = new Color(32,43,194);
 		
-		Dimension d = new Dimension(800,500);
-		
-		painelMaster = new JPaintedPanel("img/background-busca.jpg",d);
-		setContentPane(painelMaster);
-		
-		setSize(d);
+		setSize(800,500);
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setResizable(false);
 		
-		painelMaster.setLayout(null);
+		getContentPane().setLayout(null);
 		
 		JPanel painelBusca = new JPanel();
 		painelBusca.setOpaque(false);
 		painelBusca.setBorder(GraphicsHelper.getInstance().getTitledBorder("Busca"));
 		painelBusca.setBounds(12, 12, 776, 83);
-		painelMaster.add(painelBusca);
+		getContentPane().add(painelBusca);
 		painelBusca.setLayout(null);
 		
 		JLabel labelNome = new JLabel("Nome:");
@@ -148,7 +141,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		painelResultado.setOpaque(false);
 		painelResultado.setBorder(GraphicsHelper.getInstance().getTitledBorder("Resultados"));
 		painelResultado.setBounds(12, 99, 776, 315);
-		painelMaster.add(painelResultado);
+		getContentPane().add(painelResultado);
 		painelResultado.setLayout(null);
 		
 		modelo = new LockedTableModel(colunas);
@@ -192,13 +185,13 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		labelInfos.setFont(fonte);
 		labelInfos.setForeground(color);
 		labelInfos.setBounds(12, 415, 776, 27);
-		painelMaster.add(labelInfos);
+		getContentPane().add(labelInfos);
 		
-		stdout = new PrintStream(new StdoutManager(labelInfos));
+		/*stdout = new PrintStream(new StdoutManager(labelInfos));
 		stderr = new PrintStream(new StderrManager());
 		
 		System.setOut(stdout);
-		System.setErr(stderr);
+		System.setErr(stderr);*/
 		
 		onCreateOptionsPopupMenu();
 		onCreateOptionsMenu();
@@ -211,8 +204,8 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 	@Override
 	public void dispose() {
 		
-		System.err.close();
-		stderr.close();
+		//System.err.close();
+		//stderr.close();
 		
 		super.dispose();
 		

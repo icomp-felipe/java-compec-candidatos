@@ -69,7 +69,7 @@ public class FichaCandidato {
 			parameters.put("PAR_CONCURSO", candidato.getConcurso());
 			parameters.put("PAR_CODIGO", candidato.getCodigoAsString());
 			parameters.put("PAR_LAST_INSC", candidato.getDataInscricao());
-			parameters.put("PAR_SITUACAO", candidato.getSituacao().getText());
+			parameters.put("PAR_SITUACAO", candidato.getSituacao());
 			
 		}
 		
