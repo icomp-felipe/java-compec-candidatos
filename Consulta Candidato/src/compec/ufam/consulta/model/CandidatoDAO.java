@@ -3,9 +3,9 @@ package compec.ufam.consulta.model;
 import java.io.*;
 import java.util.*;
 
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Row;
 
 import com.phill.libs.ResourceManager;
 import com.phill.libs.files.PhillFileUtils;
@@ -40,19 +40,15 @@ public class CandidatoDAO {
 	
 	/************ Bloco de Métodos Públicos de Manipulação da Lista de Candidatos ************/
 	
-	/** Carrega todas as planilhas de candidatos para a lista em memória */
+	/** Carrega todas as planilhas de candidatos para a memória. */
 	public void load() {
 		
-		File[] listaArquivos = PhillFileUtils.listFilesOrdered(sheetsDirectory,PhillFileUtils.ASCENDING);
+		File[] listaArquivos = PhillFileUtils.listFilesOrdered(sheetsDirectory, PhillFileUtils.ASCENDING);
 		
 		for (File planilha: listaArquivos) {
 			
-			if (planilha.getName().endsWith(".xls")) {
-				
-				Sistema versao = getVersaoSistema(planilha);
-				loadCandidatosFromFile(planilha, versao);
-				
-			}
+			if (planilha.getName().endsWith(".xls"))
+				loadCandidatosFromFile(planilha);
 			
 		}
 		
@@ -87,9 +83,7 @@ public class CandidatoDAO {
 	/************** Bloco de Métodos de Manipulação das Planilhas ****************************/
 	
 	/** Carrega a lista de candidatos a partir de um arquivo */
-	private void loadCandidatosFromFile(File planilha, Sistema versao) {
-		
-		if (versao == null) return;
+	private void loadCandidatosFromFile(final File planilha) {
 		
 		try {
 			
@@ -104,7 +98,7 @@ public class CandidatoDAO {
 			listaConcursos.add(sheet.getRow(1).getCell(0).getStringCellValue());
 			
 			while (rowIterator.hasNext()) {
-				Candidato candidato = getCandidatoFromRow(rowIterator.next(),versao);
+				Candidato candidato = getCandidatoFromRow(rowIterator.next());
 				listaCandidatos.add(candidato);
 			}
 			
@@ -119,9 +113,9 @@ public class CandidatoDAO {
 	}
 	
 	/** Carrega um candidato a partir de uma linha da planilha */
-	private Candidato getCandidatoFromRow(Row sheet, Sistema versao) {
+	private Candidato getCandidatoFromRow(Row sheet) {
 		
-		final int[] rowSet = versao.getRowSet();
+		final int[] rowSet = new int[] {1};
 		
 		String concurso   = sheet.getCell(rowSet[0]).getStringCellValue();
 		int codigo		  = Integer.parseInt(sheet.getCell(rowSet[1]).getStringCellValue());
@@ -147,14 +141,9 @@ public class CandidatoDAO {
 		String fone   = sheet.getCell(rowSet[17]).getStringCellValue();
 		String email  = sheet.getCell(rowSet[18]).getStringCellValue();
 		
-		Candidato candidato = new Candidato(concurso, codigo, nome, sexo, nascimento, rg, orgaoEmissor, estadoEmissor, cpf, dataInscricao, situacao, rua, numCasa, bairro, cep, cidade, estado, fone, email, versao);
+		//Candidato candidato = new Candidato(concurso, codigo, nome, sexo, nascimento, rg, orgaoEmissor, estadoEmissor, cpf, dataInscricao, situacao, rua, numCasa, bairro, cep, cidade, estado, fone, email);
 		
-		return candidato;
-	}
-	
-	/** Identifica a versão do sistema de origem da planilha */
-	private Sistema getVersaoSistema(File arquivo) {
-		return Sistema.NOVO;
+		return null;
 	}
 	
 }
