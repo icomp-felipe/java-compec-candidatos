@@ -21,7 +21,7 @@ import com.phill.libs.files.PhillFileUtils;
 /** Classe responsável pela extração de dados dos candidatos a partir das planilhas do Excel contidas em 'res/sheets'.
  *  @author Felipe André - felipeandresouza@hotmail.com
  *  @version 2.0 - 18/FEV/2023 */
-public class NewCandidatoDAO {
+public class CandidatoDAO {
 
 	private static final File sheets = ResourceManager.getResourceAsFile("sheets");
 	
@@ -35,10 +35,10 @@ public class NewCandidatoDAO {
 	 *  @return Mapa com as listas de candidatos identificadas pelo código do concurso.
 	 *  @throws FileNotFoundException quando a <code>planilha</code> não pôde ser lida ou encontrada.
 	 *  @throws IOException quando algum erro geral de leitura ocorre. */
-	public static Map<String, List<NewCandidato>> load() throws FileNotFoundException, IOException {
+	public static Map<String, List<Candidato>> load() throws FileNotFoundException, IOException {
 		
 		// Instanciando o mapa
-		Map<String, List<NewCandidato>> mapaCandidatos = new HashMap<String, List<NewCandidato>>();
+		Map<String, List<Candidato>> mapaCandidatos = new HashMap<String, List<Candidato>>();
 		
 		// Listando planilhas xls dentro do diretório 'sheets'
 		File[] listaArquivos = PhillFileUtils.listFilesOrdered(sheets, PhillFileUtils.ASCENDING);
@@ -57,7 +57,7 @@ public class NewCandidatoDAO {
 	 *  @param mapaCandidatos - mapeamento de (concurso, lista de candidatos)
 	 *  @throws FileNotFoundException quando a <code>planilha</code> não pôde ser lida ou encontrada.
 	 *  @throws IOException quando algum erro geral de leitura ocorre. */
-	private static void loadFromSheet(final File planilha, final Map<String, List<NewCandidato>> mapaCandidatos) throws FileNotFoundException, IOException {
+	private static void loadFromSheet(final File planilha, final Map<String, List<Candidato>> mapaCandidatos) throws FileNotFoundException, IOException {
 		
 		// Abrindo a planilha
 		HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(planilha));
@@ -65,7 +65,7 @@ public class NewCandidatoDAO {
 		Iterator<Row> rowIterator = sheet.iterator();
 		
 		// Instanciando lista de candidatos
-		List<NewCandidato> listaCandidatos = new ArrayList<NewCandidato>();
+		List<Candidato> listaCandidatos = new ArrayList<Candidato>();
 		
 		// Lendo o cabeçalho
 		Row   header    = rowIterator.next();
@@ -77,7 +77,7 @@ public class NewCandidatoDAO {
 		// Iterando nas linhas da planilha, recuperando candidatos
 		while (rowIterator.hasNext()) {
 			
-			NewCandidato candidato = loadFromRow(rowIterator.next(), concurso, columnSet);
+			Candidato candidato = loadFromRow(rowIterator.next(), concurso, columnSet);
 			listaCandidatos.add(candidato);
 			
 		}
@@ -91,10 +91,10 @@ public class NewCandidatoDAO {
 	 *  @param row - linha da planilha do Excel
 	 *  @param concurso - código de concurso (estático e único)
 	 *  @param columnSet - índices das colunas, de acordo com {@link #columnNames}
-	 *  @return Objeto {@link NewCandidato} com os dados extraídos de uma linha da planilha. */
-	private static NewCandidato loadFromRow(final Row row, final String concurso, final int[] columnSet) {
+	 *  @return Objeto {@link Candidato} com os dados extraídos de uma linha da planilha. */
+	private static Candidato loadFromRow(final Row row, final String concurso, final int[] columnSet) {
 		
-		final NewCandidato candidato = new NewCandidato();
+		final Candidato candidato = new Candidato();
 		
 		candidato.setConcurso(concurso);
 		

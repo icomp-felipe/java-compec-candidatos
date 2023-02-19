@@ -372,9 +372,6 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 		Candidato candidato = TableUtils.getSelected(tableResultado, listaFiltrados);
 		
-		if (candidato != null)
-			new TelaVisualizaCandidato(candidato);
-		
 	}
 	
 	/** Exibe informações legais do programa */
@@ -426,12 +423,12 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 	/** Exibe os candidatos que contém os mesmos dados informados nos campos de texto */
 	private void buscaCandidatos(String concurso, String nome, String rg, String cpf) {
 		
-		listaFiltrados = candidatoDAO.buscaCandidato(concurso, nome, rg, cpf);
-		SwingUtilities.invokeLater(() -> TableUtils.load(modelo, listaFiltrados, textQtd));
+		/*listaFiltrados = candidatoDAO.buscaCandidato(concurso, nome, rg, cpf);
+		SwingUtilities.invokeLater(() -> TableUtils.load(modelo, listaFiltrados, textQtd));*/
 		
 	}
 	
-	Map<String, List<NewCandidato>> mapaCandidatos;
+	Map<String, List<Candidato>> mapaCandidatos;
 	
 	/** Método que realiza o carregamento da lista de candidatos para a memória */
 	private void carregaPlanilhas() {
@@ -440,7 +437,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 			
 			SwingUtilities.invokeLater(() -> turnFieldsEditable(false));
 			
-			mapaCandidatos = NewCandidatoDAO.load();
+			mapaCandidatos = CandidatoDAO.load();
 			
 			/*candidatoDAO = new CandidatoDAO();
 			candidatoDAO.load();

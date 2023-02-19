@@ -1,12 +1,15 @@
 package compec.ufam.consulta.model;
 
+import com.phill.libs.StringUtils;
+import com.phill.libs.br.CPFParser;
+
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
 /** Modelagem de um candidato.
  *  @author Felipe André - felipeandresouza@hotmail.com
  *  @version 2.0 - 18/FEV/2023 */
-public class NewCandidato {
+public class Candidato {
 	
 	// Dados pessoais
 	private String nome, sexo, rg, rgUF, cpf;
@@ -159,5 +162,93 @@ public class NewCandidato {
 	public void setSituacaoPagamento(final String situacaoPagamento) {
 		this.situacaoPagamento = situacaoPagamento;
 	}
+	
+	/********************************************************************/
+	/************************* Bloco de Getters *************************/
+	/********************************************************************/
 
+	public String getNome() {
+		return StringUtils.BR.normaliza(this.nome);
+	}
+	
+	public String getSexo() {
+		return this.sexo.equals("F") ? "Feminino" : "Masculino";
+	}
+	
+	public String getCpf() {
+		return CPFParser.format(this.cpf);
+	}
+	
+	public String getNascimento() {
+		return this.dataNascimento.toString(DateTimeFormat.forPattern("dd/MM/YYYY"));
+	}
+	
+	public String getRg() {
+		return this.rg;
+	}
+	
+	public String getUfRG() {
+		return this.rgUF;
+	}
+
+	public String getLogradouro() {
+		return this.logradouro;
+	}
+
+	public String getNumero() {
+		return this.numero;
+	}
+	
+	public String getBairro() {
+		return this.bairro;
+	}
+	
+	public String getCidadeUF() {
+		return this.cidade + " - " + this.uf;
+	}
+	
+	public String getCep() {
+		return this.cep;
+	}
+
+	public String getTelefone() {
+		return this.telefone;
+	}
+
+	public String getEmail() {
+		return this.email;
+	}
+
+	public String getConcurso() {
+		return this.concurso;
+	}
+	
+	public String getCodigo() {
+		return Integer.toString(this.inscricao);
+	}
+	
+	public String getDataInscricao() {
+		return this.dataInscricao.toString(DateTimeFormat.forPattern("dd/MM/YYYY HH:mm:ss"));
+	}
+	
+	public String getCidadeConcurso() {
+		return this.cidadeConcurso;
+	}
+	
+	public String getCurso() {
+		return this.curso;
+	}
+	
+	public String getCotas() {
+		return this.acaoAfirmativa;
+	}
+	
+	public String getPcd() {
+		return this.temDeficiencia ? "Sim" : "Não";
+	}
+
+	public String getSituacao() {
+		return this.situacaoPagamento;
+	}
+	
 }
