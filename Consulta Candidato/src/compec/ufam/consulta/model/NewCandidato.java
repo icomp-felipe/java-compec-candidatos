@@ -3,6 +3,9 @@ package compec.ufam.consulta.model;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+/** Modelagem de um candidato.
+ *  @author Felipe André - felipeandresouza@hotmail.com
+ *  @version 2.0 - 18/FEV/2023 */
 public class NewCandidato {
 	
 	// Dados pessoais
@@ -155,10 +158,6 @@ public class NewCandidato {
 	/** Setter da situação de pagamento. */
 	public void setSituacaoPagamento(final String situacaoPagamento) {
 		this.situacaoPagamento = situacaoPagamento;
-	}
-
-	public String getNome() {
-		return this.situacaoPagamento;
 	}
 
 }

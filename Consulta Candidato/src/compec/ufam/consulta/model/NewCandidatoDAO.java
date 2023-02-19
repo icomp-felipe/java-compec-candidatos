@@ -4,33 +4,37 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import java.util.Map;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Row;
 
 import com.phill.libs.ResourceManager;
 import com.phill.libs.files.PhillFileUtils;
 
+/** Classe responsável pela extração de dados dos candidatos a partir das planilhas do Excel contidas em 'res/sheets'.
+ *  @author Felipe André - felipeandresouza@hotmail.com
+ *  @version 2.0 - 18/FEV/2023 */
 public class NewCandidatoDAO {
 
-	public static void main(String[] args) throws FileNotFoundException, IOException {
-		Map<String, List<NewCandidato>> map = load();
-		System.out.println(map.get("PSLIND23").get(0).getNome());
-	}
-	
 	private static final File sheets = ResourceManager.getResourceAsFile("sheets");
 	
+	/** Nomes das colunas a serem buscadas no cabeçalho de cada planilha. */
 	private static final String[] columnNames = { "NOME_CAND", "SEXO_CAND", "NASCIMENTO_CAND", "RG_CAND", "UF_RG_CAND", "CPF_CAND", "LOGRADOURO", "NUMERO", "BAIRRO", "CEP",
 												  "CIDADE_LOGRADOURO", "UF_LOGRADOURO", "TELEFONE", "EMAIL", "DEFICIENCIA_?", "COD_CONCURSO", "NUM_INSCRICAO", "DATA_INSC",
 												  "CURSO", "ACAO_AFIRMATIVA", "CIDADE_CONCURSO", "SITUACAO_PAGAMENTO" };
 	
 	
+	/** Monta um mapa com as listas de candidatos identificadas pelo código do concurso, a partir de todas as planilhas do diretório de recursos 'sheets'.
+	 *  @return Mapa com as listas de candidatos identificadas pelo código do concurso.
+	 *  @throws FileNotFoundException quando a <code>planilha</code> não pôde ser lida ou encontrada.
+	 *  @throws IOException quando algum erro geral de leitura ocorre. */
 	public static Map<String, List<NewCandidato>> load() throws FileNotFoundException, IOException {
 		
 		// Instanciando o mapa
@@ -48,6 +52,11 @@ public class NewCandidatoDAO {
 		return mapaCandidatos;
 	}
 
+	/** Carrega uma lista de candidatos a partir de uma <code>planilha</code> do Excel para um {@link HashMap}, identificado pelo código do concurso.
+	 *  @param planilha - arquivo da planilha do Excel
+	 *  @param mapaCandidatos - mapeamento de (concurso, lista de candidatos)
+	 *  @throws FileNotFoundException quando a <code>planilha</code> não pôde ser lida ou encontrada.
+	 *  @throws IOException quando algum erro geral de leitura ocorre. */
 	private static void loadFromSheet(final File planilha, final Map<String, List<NewCandidato>> mapaCandidatos) throws FileNotFoundException, IOException {
 		
 		// Abrindo a planilha
@@ -68,7 +77,7 @@ public class NewCandidatoDAO {
 		// Iterando nas linhas da planilha, recuperando candidatos
 		while (rowIterator.hasNext()) {
 			
-			NewCandidato candidato = loadFromRow(rowIterator.next(), columnSet);
+			NewCandidato candidato = loadFromRow(rowIterator.next(), concurso, columnSet);
 			listaCandidatos.add(candidato);
 			
 		}
@@ -78,9 +87,16 @@ public class NewCandidatoDAO {
 		
 	}
 	
-	private static NewCandidato loadFromRow(final Row row, final int[] columnSet) {
+	/** Extrai os dados de um candidato de uma linha da tabela.
+	 *  @param row - linha da planilha do Excel
+	 *  @param concurso - código de concurso (estático e único)
+	 *  @param columnSet - índices das colunas, de acordo com {@link #columnNames}
+	 *  @return Objeto {@link NewCandidato} com os dados extraídos de uma linha da planilha. */
+	private static NewCandidato loadFromRow(final Row row, final String concurso, final int[] columnSet) {
 		
 		final NewCandidato candidato = new NewCandidato();
+		
+		candidato.setConcurso(concurso);
 		
 		candidato.setNome             (row.getCell(columnSet[ 0]).getStringCellValue());
 		candidato.setSexo             (row.getCell(columnSet[ 1]).getStringCellValue());
@@ -107,6 +123,9 @@ public class NewCandidatoDAO {
 		return candidato;
 	}
 
+	/** Extrai os índices de coluna a partir do cabeçalho do .xls.
+	 *  @param header - linha de cabeçalho da planilha de candidatos
+	 *  @return Array com os índices de coluna na ordem de {@link #columnNames}. */
 	private static int[] getColumnSet(final Row header) {
 	
 		// Recupera a quantidade de nomes de campos a serem buscados
