@@ -2,6 +2,8 @@ package compec.ufam.consulta.view;
 
 import java.awt.*;
 import java.util.*;
+import java.util.List;
+
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.*;
@@ -409,11 +411,11 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 	}
 	
 	/** Método que atualiza as informações do comboBox */
-	private void updateCombo(Vector<String> listaConcursos) {
+	private void updateCombo(Set<String> keys) {
 		
 		comboConcurso.removeAllItems();
 		
-		for (String concurso: listaConcursos)
+		for (String concurso: keys)
 			comboConcurso.addItem(concurso);
 		comboConcurso.addItem("Todos");
 		
@@ -429,6 +431,8 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 	}
 	
+	Map<String, List<NewCandidato>> mapaCandidatos;
+	
 	/** Método que realiza o carregamento da lista de candidatos para a memória */
 	private void carregaPlanilhas() {
 		
@@ -436,11 +440,13 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 			
 			SwingUtilities.invokeLater(() -> turnFieldsEditable(false));
 			
-			candidatoDAO = new CandidatoDAO();
-			candidatoDAO.load();
-			candidatoDAO.sort();
+			mapaCandidatos = NewCandidatoDAO.load();
 			
-			SwingUtilities.invokeLater(() -> updateCombo(candidatoDAO.getConcursos()));
+			/*candidatoDAO = new CandidatoDAO();
+			candidatoDAO.load();
+			candidatoDAO.sort();*/
+			
+			SwingUtilities.invokeLater(() -> updateCombo(mapaCandidatos.keySet()));
 			
 		}
 		catch (Exception exception) {
