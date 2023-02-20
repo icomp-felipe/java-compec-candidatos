@@ -46,7 +46,7 @@ public class TelaBuscaCandidato extends JFrame {
 	private final JTextField textNome, textRG;
 	private final JFormattedTextField textCPF;
 	
-	private final JButton botaoLimpar;
+	private final JButton buttonClear;
 	private final JLabel labelInfos, textQtd;
 	
 	//private final PrintStream stdout, stderr;
@@ -55,11 +55,15 @@ public class TelaBuscaCandidato extends JFrame {
 	private Map<String, List<Candidato>> mapaCandidatos;
 	private ArrayList<Candidato> listaFiltrados;
 	
-	private final ImageIcon loading;
+	private final ImageIcon loadingIcon;
 	
 	// Carregando bundle de idiomas
 	private final static PropertyBundle bundle = new PropertyBundle("i18n/tela-candidato-busca", null);
 	private JCheckBox checkPagoIsento;
+	private JButton buttonRefresh;
+	private JButton buttonDownload;
+	
+	private boolean loading;
 
 	public static void main(String[] args) {
 		new TelaBuscaCandidato();
@@ -75,8 +79,10 @@ public class TelaBuscaCandidato extends JFrame {
 		getContentPane().setLayout(null);
 		
 		// Recuperando ícones
-		final Icon clearIcon = ResourceManager.getIcon("icon/brush.png", 20, 20);
-		this.loading = new ImageIcon(ResourceManager.getResource("icon/loading.gif"));
+		final Icon clearIcon    = ResourceManager.getIcon("icon/brush.png"          , 20, 20);
+		final Icon downloadIcon = ResourceManager.getIcon("icon/globe_3.png"        , 20, 20);
+		final Icon refreshIcon  = ResourceManager.getIcon("icon/playback_reload.png", 20, 20);
+		this.loadingIcon = new ImageIcon(ResourceManager.getResource("icon/loading.gif"));
 		
 		// Recuperando fontes e cores
 		Font  fonte  = instance.getFont ();
@@ -150,11 +156,11 @@ public class TelaBuscaCandidato extends JFrame {
 		checkPagoIsento.setBounds(645, 55, 210, 25);
 		panelBusca.add(checkPagoIsento);
 		
-		botaoLimpar = new JButton(clearIcon);
-		botaoLimpar.setToolTipText(bundle.getString("hint-button-clear"));
-		botaoLimpar.addActionListener((event) -> utilClear());
-		botaoLimpar.setBounds(963, 55, 30, 25);
-		panelBusca.add(botaoLimpar);
+		buttonClear = new JButton(clearIcon);
+		buttonClear.setToolTipText(bundle.getString("hint-button-clear"));
+		buttonClear.addActionListener((event) -> utilClear());
+		buttonClear.setBounds(963, 55, 30, 25);
+		panelBusca.add(buttonClear);
 		
 		// Painel 'Candidatos'
 		JPanel panelCandidatos = new JPanel();
@@ -212,9 +218,21 @@ public class TelaBuscaCandidato extends JFrame {
 		// Fundo da janela
 		labelInfos = new JLabel();
 		labelInfos.setFont(fonte);
-		labelInfos.setBounds(10, 555, 1004, 27);
+		labelInfos.setBounds(10, 555, 925, 25);
 		getContentPane().add(labelInfos);
+		
+		buttonRefresh = new JButton(refreshIcon);
+		buttonRefresh.addActionListener((event) -> threadLoadSheets());
+		buttonRefresh.setToolTipText(bundle.getString("hint-button-refresh"));
+		buttonRefresh.setBounds(943, 557, 30, 25);
+		getContentPane().add(buttonRefresh);
 
+		buttonDownload = new JButton(downloadIcon);
+		buttonDownload.addActionListener((event) -> threadDownloadSheets());
+		buttonDownload.setToolTipText(bundle.getString("hint-button-download"));
+		buttonDownload.setBounds(983, 557, 30, 25);
+		getContentPane().add(buttonDownload);
+		
 		// Listeners dos campos de texto
 		DocumentListener docListener = (DocumentChangeListener) (event) -> actionBusca();
 		
@@ -229,7 +247,6 @@ public class TelaBuscaCandidato extends JFrame {
 		System.setErr(stderr);*/
 		
 		createPopupMenu();
-		onCreateOptionsMenu();
 		threadLoadSheets();
 		
 		comboConcurso.addActionListener((event) -> actionBusca());
@@ -255,36 +272,6 @@ public class TelaBuscaCandidato extends JFrame {
 		
 	}
 	
-	/** Inicializa a barra de menu e seus subitens */
-	private void onCreateOptionsMenu() {
-		JMenuBar menuBar = new JMenuBar();
-		
-		JMenu menuArquivo = new JMenu("Arquivo");
-		menuBar.add(menuArquivo);
-		
-		JMenuItem itemReload = new JMenuItem("Recarregar Planilhas");
-		itemReload.addActionListener((event) -> threadLoadSheets());
-		menuArquivo.add(itemReload);
-		
-		JMenuItem itemDownload = new JMenuItem("Baixar Planilhas");
-		itemDownload.addActionListener((event) -> threadDownloadSheets());
-		menuArquivo.add(itemDownload);
-		
-		JMenuItem itemSair = new JMenuItem("Sair");
-		itemSair.addActionListener((event) -> dispose());
-		
-		menuArquivo.addSeparator();
-		menuArquivo.add(itemSair);
-		
-		JMenu menuBusca = new JMenu("Busca");
-		menuBar.add(menuBusca);
-		
-		itemRuntime = new JRadioButtonMenuItem("Busca em Tempo Real");
-		itemRuntime.setSelected(false);
-		menuBusca.add(itemRuntime);
-		
-		setJMenuBar(menuBar);
-	}
 
 	/** Adiciona um popup menu às linhas da tabela */
 	private void createPopupMenu() {
@@ -301,7 +288,7 @@ public class TelaBuscaCandidato extends JFrame {
 		Action actionVisualizar = new ShortcutAction("Visualizar (PDF)"          , KeyEvent.VK_V, visualizar, (event) -> actionReport  ());
 		Action actionImprimir   = new ShortcutAction("Imprimir diretamente"      , KeyEvent.VK_I, imprimir  , (event) -> actionPrint   ());
 		Action actionEmail      = new ShortcutAction("Enviar e-mail"             , KeyEvent.VK_E, email     , (event) -> actionEmail   ());
-		Action actionWhatsapp   = new ShortcutAction("Enviar Mensagem (Whatsapp)", KeyEvent.VK_W, whatsapp  , (event) -> actionWhatsapp());
+		Action actionWhatsapp   = new ShortcutAction("Enviar mensagem (Whatsapp)", KeyEvent.VK_W, whatsapp  , (event) -> actionWhatsapp());
 		
 		// Declarando os itens de menu
 		JMenuItem itemFicha = new JMenuItem(actionVisualizar);
@@ -342,35 +329,40 @@ public class TelaBuscaCandidato extends JFrame {
 	/** Motor de busca de candidato. */
 	private synchronized void actionBusca() {
 		
-		// Criando uma nova lista interna
-		this.listaFiltrados = new ArrayList<Candidato>();
-		
-		// Recuperando dados da view
-		String nomeCand  = textNome.getText().trim();
-		String cpfCand   = textCPF .getText().trim();
-		String rgCand    = textRG  .getText().trim();
-		String concurso  = comboConcurso.getSelectedItem().toString();
-		boolean inscrito = checkPagoIsento.isSelected();
-		
-		// Percorrendo todos os concursos
-		for (List<Candidato> candidatos: mapaCandidatos.values()) {
+		// Previne execução desse método quando a view está sendo atualizada por outros métodos 
+		if (!this.loading) {
 			
-			// Percorrendo todos os candidatos
-			for (Candidato candidato: candidatos) {
+			// Criando uma nova lista interna
+			this.listaFiltrados = new ArrayList<Candidato>();
+			
+			// Recuperando dados da view
+			String nomeCand  = textNome.getText().trim();
+			String cpfCand   = textCPF .getText().trim();
+			String rgCand    = textRG  .getText().trim();
+			String concurso  = comboConcurso.getSelectedItem().toString();
+			boolean inscrito = checkPagoIsento.isSelected();
+			
+			// Percorrendo todos os concursos
+			for (List<Candidato> candidatos: mapaCandidatos.values()) {
 				
-				if (candidato.matches(nomeCand, cpfCand, rgCand, concurso, inscrito))
-					this.listaFiltrados.add(candidato);
+				// Percorrendo todos os candidatos
+				for (Candidato candidato: candidatos) {
+					
+					if (candidato.matches(nomeCand, cpfCand, rgCand, concurso, inscrito))
+						this.listaFiltrados.add(candidato);
+					
+				}
 				
 			}
 			
+			// Ordenando a lista por nome de candidato
+			Collections.sort(this.listaFiltrados, (cand1,cand2) -> cand1.getNome().compareToIgnoreCase(cand2.getNome()));
+			
+			// Atualizando a view
+			TableUtils.load(modelo, this.listaFiltrados, textQtd);
+			
 		}
-		
-		// Ordenando a lista por nome de candidato
-		Collections.sort(this.listaFiltrados, (cand1,cand2) -> cand1.getNome().compareToIgnoreCase(cand2.getNome()));
-		
-		// Atualizando a view
-		TableUtils.load(modelo, this.listaFiltrados, textQtd);
-		
+			
 	}
 	
 	/** Abre um novo email com o endereço do candidato selecionado na tabela. */
@@ -476,14 +468,19 @@ public class TelaBuscaCandidato extends JFrame {
 	/** Limpa os dados de pesquisa. */
 	private void utilClear() {
 		
-		textNome.setText(null);
-		textCPF .setText(null);
-		textRG  .setText(null);
+		SwingUtilities.invokeLater(() -> {
+			
+			textNome.setText(null);
+			textCPF .setText(null);
+			textRG  .setText(null);
+			
+			comboConcurso  .setSelectedIndex(0);
+			checkPagoIsento.setSelected(false);
+			
+			textNome.requestFocus();
+			
+		});
 		
-		comboConcurso  .setSelectedIndex(0);
-		checkPagoIsento.setSelected(false);
-		
-		textNome.requestFocus();
 	}
 	
 	/** Ativa ou desativa os campos de entrada de dados.
@@ -499,8 +496,12 @@ public class TelaBuscaCandidato extends JFrame {
 			textRG         .setEditable(enable);
 			comboConcurso  .setEnabled (enable);
 			checkPagoIsento.setEnabled (enable);
-			botaoLimpar    .setEnabled (enable);
-			tableCandidatos .setEnabled (enable);
+			buttonClear    .setEnabled (enable);
+			
+			tableCandidatos.setEnabled(enable);
+			
+			buttonRefresh .setEnabled(enable);
+			buttonDownload.setEnabled(enable);
 			
 		});
 		
@@ -520,7 +521,7 @@ public class TelaBuscaCandidato extends JFrame {
 				
 				labelInfos.setVisible(true);
 				labelInfos.setText(message);
-				labelInfos.setIcon(showLoadingIcon ? loading : null);
+				labelInfos.setIcon(showLoadingIcon ? loadingIcon : null);
 				
 			}
 			
@@ -533,13 +534,17 @@ public class TelaBuscaCandidato extends JFrame {
 		
 		SwingUtilities.invokeLater(() -> {
 		
+			this.loading = true;
+			
 			comboConcurso.removeAllItems();
 			
 			for (String concurso: mapaCandidatos.keySet())
 				comboConcurso.addItem(concurso);
 			
 			comboConcurso.addItem("Todos");
-		
+			
+			this.loading = false;
+			
 		});
 		
 	}
@@ -580,6 +585,7 @@ public class TelaBuscaCandidato extends JFrame {
 			finally {
 				
 				utilLockFields(false);
+				utilClear();
 				
 			}
 			
@@ -589,5 +595,4 @@ public class TelaBuscaCandidato extends JFrame {
 		loadThread.start();
 		
 	}
-	
 }

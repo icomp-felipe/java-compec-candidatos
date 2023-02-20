@@ -201,7 +201,7 @@ public class Candidato implements JTableRowData {
 
 	/** @return Logradouro de endereço do candidato. */
 	public String getLogradouro() {
-		return this.logradouro;
+		return StringUtils.BR.normaliza(this.logradouro);
 	}
 
 	/** @return Número de endereço do candidato. */
@@ -211,12 +211,12 @@ public class Candidato implements JTableRowData {
 	
 	/** @return Bairro de endereço do candidato. */
 	public String getBairro() {
-		return this.bairro;
+		return StringUtils.BR.normaliza(this.bairro);
 	}
 	
 	/** @return Nome da cidade de endereço do candidato. */
 	public String getCidadeUF() {
-		return this.cidade + " - " + this.uf;
+		return StringUtils.BR.normaliza(this.cidade) + " - " + this.uf;
 	}
 	
 	/** @return Número de CEP de endereço do candidato. */
@@ -251,12 +251,12 @@ public class Candidato implements JTableRowData {
 	
 	/** @return Cidade de concurso do candidato. */
 	public String getCidadeConcurso() {
-		return this.cidadeConcurso;
+		return StringUtils.BR.normaliza(this.cidadeConcurso);
 	}
 	
 	/** @return Nome do curso escolhido pelo candidato. */
 	public String getCurso() {
-		return this.curso;
+		return StringUtils.BR.normaliza(this.curso);
 	}
 	
 	/** @return Cota em concurso. */
@@ -271,7 +271,7 @@ public class Candidato implements JTableRowData {
 
 	/** @return Status da inscrição. */
 	public String getSituacao() {
-		return this.situacaoPagamento;
+		return StringUtils.BR.normaliza(this.situacaoPagamento);
 	}
 	
 	/** @return Número de WhatsApp do candidato. */
