@@ -2,6 +2,8 @@ package compec.ufam.consulta.model;
 
 import com.phill.libs.StringUtils;
 import com.phill.libs.br.CPFParser;
+import com.phill.libs.br.PhoneNumberUtils;
+import com.phill.libs.table.JTableRowData;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -9,7 +11,7 @@ import org.joda.time.format.DateTimeFormat;
 /** Modelagem de um candidato.
  *  @author Felipe André - felipeandresouza@hotmail.com
  *  @version 2.0 - 18/FEV/2023 */
-public class Candidato {
+public class Candidato implements JTableRowData {
 	
 	// Dados pessoais
 	private String nome, sexo, rg, rgUF, cpf;
@@ -167,88 +169,152 @@ public class Candidato {
 	/************************* Bloco de Getters *************************/
 	/********************************************************************/
 
+	/** @return Nome do candidato já normalizado. */
 	public String getNome() {
 		return StringUtils.BR.normaliza(this.nome);
 	}
 	
+	/** @return Sexo do candidato. */
 	public String getSexo() {
 		return this.sexo.equals("F") ? "Feminino" : "Masculino";
 	}
 	
+	/** @return Número de CPF do candidato. */
 	public String getCpf() {
 		return CPFParser.format(this.cpf);
 	}
 	
+	/** @return Data de nascimento do candidato, no formato 'dd/MM/YYYY'. */
 	public String getNascimento() {
 		return this.dataNascimento.toString(DateTimeFormat.forPattern("dd/MM/YYYY"));
 	}
 	
+	/** @return Número de RG do candidato. */
 	public String getRg() {
 		return this.rg;
 	}
 	
+	/** @return Sigla da UF de emissão de RG do candidato. */
 	public String getUfRG() {
 		return this.rgUF;
 	}
 
+	/** @return Logradouro de endereço do candidato. */
 	public String getLogradouro() {
 		return this.logradouro;
 	}
 
+	/** @return Número de endereço do candidato. */
 	public String getNumero() {
 		return this.numero;
 	}
 	
+	/** @return Bairro de endereço do candidato. */
 	public String getBairro() {
 		return this.bairro;
 	}
 	
+	/** @return Nome da cidade de endereço do candidato. */
 	public String getCidadeUF() {
 		return this.cidade + " - " + this.uf;
 	}
 	
+	/** @return Número de CEP de endereço do candidato. */
 	public String getCep() {
 		return this.cep;
 	}
 
+	/** @return Número de telefone do candidato (com formatação). */
 	public String getTelefone() {
-		return this.telefone;
+		return PhoneNumberUtils.format(this.telefone);
 	}
 
+	/** @return Endereço de e-mail do candidato. */
 	public String getEmail() {
 		return this.email;
 	}
 
+	/** @return Nome do concurso. */
 	public String getConcurso() {
 		return this.concurso;
 	}
 	
+	/** @return Número de inscrição do candidato. */
 	public String getCodigo() {
 		return Integer.toString(this.inscricao);
 	}
 	
+	/** @return Data e hora da inscrição do candidato, no formato 'dd/MM/YYYY - HH:mm:ss'. */
 	public String getDataInscricao() {
-		return this.dataInscricao.toString(DateTimeFormat.forPattern("dd/MM/YYYY HH:mm:ss"));
+		return this.dataInscricao.toString(DateTimeFormat.forPattern("dd/MM/YYYY - HH:mm:ss"));
 	}
 	
+	/** @return Cidade de concurso do candidato. */
 	public String getCidadeConcurso() {
 		return this.cidadeConcurso;
 	}
 	
+	/** @return Nome do curso escolhido pelo candidato. */
 	public String getCurso() {
 		return this.curso;
 	}
 	
+	/** @return Cota em concurso. */
 	public String getCotas() {
 		return this.acaoAfirmativa;
 	}
 	
+	/** @return Texto indicando se o candidato se identificou como PcD. */
 	public String getPcd() {
 		return this.temDeficiencia ? "Sim" : "Não";
 	}
 
+	/** @return Status da inscrição. */
 	public String getSituacao() {
 		return this.situacaoPagamento;
+	}
+	
+	/** @return 'true' apenas se a inscrição do candidato está confirmada. */
+	public boolean inscricaoConfirmada() {
+		return this.situacaoPagamento.equals("PAGAMENTO CONFIRMADO") || this.situacaoPagamento.equals("ISENCAO DE TAXA DE INSCRICAO CONFIRMADA.");
+	}
+	
+	/********************************************************************/
+	/******************* Bloco de Métodos Utilitários *******************/
+	/********************************************************************/
+	
+	/** Compara se os dados recebidos via parâmetro conferem com os contidos nessa instância.
+	 *  @param nome - filtro por nome do candidato
+	 *  @param cpf - filtro por número de RG do candidato
+	 *  @param concurso - filtro por nome do concurso
+	 *  @param inscrito - filtra apenas por inscrição confirmada
+	 *  @return 'true' se e somente se os dados recebidos conferem com os contidos nessa instância. */
+	public boolean matches(final String nome, final String cpf, final String rg, final String concurso, final boolean inscrito) {
+		
+		if (inscrito && !inscricaoConfirmada())
+			return false;
+		
+		// Dados recebidos via parâmetro
+		String concursoAux  = concurso.equals("Todos") ? "" : concurso;
+		String compareRegex = String.format("%s.*-%s.*-%s.*-%s.*", concursoAux, nome.toUpperCase().replace("%",".*"), rg.replace("%",".*"), StringUtils.extractNumbers(cpf));
+		
+		// Dados da instância atual
+		String dados = String.format("%s-%s-%s-%s", this.concurso, this.nome, this.rg, this.cpf);
+		
+		return dados.matches(compareRegex);
+	}
+	
+	@Override
+	public Object[] getRowData() {
+		return new Object[] {
+				this.concurso,
+				getNome(),
+				this.rg,
+				getCpf(),
+				this.inscricao,
+				getDataInscricao(),
+				inscricaoConfirmada()
+		};
 	}
 	
 }
