@@ -274,6 +274,11 @@ public class Candidato implements JTableRowData {
 		return this.situacaoPagamento;
 	}
 	
+	/** @return Número de WhatsApp do candidato. */
+	public String getWhatsApp() {
+		return this.telefone == null ? null : "55" + this.telefone;
+	}
+	
 	/** @return 'true' apenas se a inscrição do candidato está confirmada. */
 	public boolean inscricaoConfirmada() {
 		return this.situacaoPagamento.equals("PAGAMENTO CONFIRMADO") || this.situacaoPagamento.equals("ISENCAO DE TAXA DE INSCRICAO CONFIRMADA.");

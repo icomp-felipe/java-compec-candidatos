@@ -15,6 +15,7 @@ import com.phill.libs.ResourceManager;
 import com.phill.libs.StringUtils;
 import com.phill.libs.br.CPFTextField;
 import com.phill.libs.i18n.PropertyBundle;
+import com.phill.libs.sys.HostUtils;
 import com.phill.libs.table.JTableMouseListener;
 import com.phill.libs.table.LockedTableModel;
 import com.phill.libs.table.TableUtils;
@@ -23,6 +24,7 @@ import com.phill.libs.ui.DocumentChangeListener;
 import com.phill.libs.ui.ESCDispose;
 import com.phill.libs.ui.GraphicsHelper;
 import com.phill.libs.ui.KeyReleasedListener;
+import com.phill.libs.ui.ShortcutAction;
 
 import compec.ufam.consulta.model.*;
 import compec.ufam.consulta.utils.*;
@@ -30,14 +32,14 @@ import compec.ufam.consulta.utils.*;
 /** Classe que implementa a interface de busca e visualização de candidatos.
  *  @author Felipe André
  *  @version 2.0, 20/FEV/2023 */
-public class TelaBuscaCandidato extends JFrame implements DocumentListener {
+public class TelaBuscaCandidato extends JFrame {
 
 	// Serial
 	private static final long serialVersionUID = 804215921125761987L;
 	
 	// Declaração de atributos gráficos
 	
-	private final JTable tableResultado;
+	private final JTable tableCandidatos;
 	private final DefaultTableModel modelo;
 	
 	private final JComboBox<String> comboConcurso;
@@ -52,6 +54,8 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 	
 	private Map<String, List<Candidato>> mapaCandidatos;
 	private ArrayList<Candidato> listaFiltrados;
+	
+	private final ImageIcon loading;
 	
 	// Carregando bundle de idiomas
 	private final static PropertyBundle bundle = new PropertyBundle("i18n/tela-candidato-busca", null);
@@ -72,6 +76,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 		// Recuperando ícones
 		final Icon clearIcon = ResourceManager.getIcon("icon/brush.png", 20, 20);
+		this.loading = new ImageIcon(ResourceManager.getResource("icon/loading.gif"));
 		
 		// Recuperando fontes e cores
 		Font  fonte  = instance.getFont ();
@@ -140,14 +145,14 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 		checkPagoIsento = new JCheckBox("Somente pagos e isentos");
 		checkPagoIsento.setFont(fonte);
-		checkPagoIsento.addActionListener((event) -> buscaCandidato());
+		checkPagoIsento.addActionListener((event) -> actionBusca());
 		checkPagoIsento.setToolTipText(bundle.getString("hint-check-pago-isento"));
 		checkPagoIsento.setBounds(645, 55, 210, 25);
 		panelBusca.add(checkPagoIsento);
 		
 		botaoLimpar = new JButton(clearIcon);
 		botaoLimpar.setToolTipText(bundle.getString("hint-button-clear"));
-		botaoLimpar.addActionListener((event) -> limpar());
+		botaoLimpar.addActionListener((event) -> utilClear());
 		botaoLimpar.setBounds(963, 55, 30, 25);
 		panelBusca.add(botaoLimpar);
 		
@@ -164,18 +169,18 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 		this.modelo = new LockedTableModel(new String [] {"Concurso","Candidato","RG","CPF","Inscrição","Data de Insc.","Pago / Isento"});
 		
-		tableResultado = new JTable(modelo);
-		tableResultado.setRowHeight(20);
-		tableResultado.setFont(ubuntu);
-		tableResultado.getTableHeader().setFont(fonte);
-		tableResultado.addMouseListener(new JTableMouseListener(tableResultado));
-		tableResultado.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		scrollResultado.setViewportView(tableResultado);
+		tableCandidatos = new JTable(modelo);
+		tableCandidatos.setRowHeight(20);
+		tableCandidatos.setFont(ubuntu);
+		tableCandidatos.getTableHeader().setFont(fonte);
+		tableCandidatos.addMouseListener(new JTableMouseListener(tableCandidatos));
+		tableCandidatos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		scrollResultado.setViewportView(tableCandidatos);
 		
 		final DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		TableColumnModel columnModel = tableResultado.getColumnModel();
+		TableColumnModel columnModel = tableCandidatos.getColumnModel();
 
 		columnModel.getColumn(0).setCellRenderer(centerRenderer);
 		columnModel.getColumn(2).setCellRenderer(centerRenderer);
@@ -207,12 +212,11 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		// Fundo da janela
 		labelInfos = new JLabel();
 		labelInfos.setFont(fonte);
-		labelInfos.setForeground(color);
 		labelInfos.setBounds(10, 555, 1004, 27);
 		getContentPane().add(labelInfos);
 
 		// Listeners dos campos de texto
-		DocumentListener docListener = (DocumentChangeListener) (event) -> buscaCandidato();
+		DocumentListener docListener = (DocumentChangeListener) (event) -> actionBusca();
 		
 		textNome.getDocument().addDocumentListener(docListener);
 		textCPF .getDocument().addDocumentListener(docListener);
@@ -224,9 +228,11 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		System.setOut(stdout);
 		System.setErr(stderr);*/
 		
-		onCreateOptionsPopupMenu();
+		createPopupMenu();
 		onCreateOptionsMenu();
-		loadSheets();
+		threadLoadSheets();
+		
+		comboConcurso.addActionListener((event) -> actionBusca());
 		
 		setSize(1024,640);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -236,8 +242,105 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 	}
 	
-	/** Busca um candidato no banco de dados em memória. */
-	private synchronized void buscaCandidato() {
+	
+	
+	
+	@Override
+	public void dispose() {
+		
+		//System.err.close();
+		//stderr.close();
+		
+		super.dispose();
+		
+	}
+	
+	/** Inicializa a barra de menu e seus subitens */
+	private void onCreateOptionsMenu() {
+		JMenuBar menuBar = new JMenuBar();
+		
+		JMenu menuArquivo = new JMenu("Arquivo");
+		menuBar.add(menuArquivo);
+		
+		JMenuItem itemReload = new JMenuItem("Recarregar Planilhas");
+		itemReload.addActionListener((event) -> threadLoadSheets());
+		menuArquivo.add(itemReload);
+		
+		JMenuItem itemDownload = new JMenuItem("Baixar Planilhas");
+		itemDownload.addActionListener((event) -> threadDownloadSheets());
+		menuArquivo.add(itemDownload);
+		
+		JMenuItem itemSair = new JMenuItem("Sair");
+		itemSair.addActionListener((event) -> dispose());
+		
+		menuArquivo.addSeparator();
+		menuArquivo.add(itemSair);
+		
+		JMenu menuBusca = new JMenu("Busca");
+		menuBar.add(menuBusca);
+		
+		itemRuntime = new JRadioButtonMenuItem("Busca em Tempo Real");
+		itemRuntime.setSelected(false);
+		menuBusca.add(itemRuntime);
+		
+		setJMenuBar(menuBar);
+	}
+
+	/** Adiciona um popup menu às linhas da tabela */
+	private void createPopupMenu() {
+		
+		JPopupMenu popupMenu = new JPopupMenu();
+		
+		// Definindo aceleradores
+		KeyStroke visualizar = KeyStroke.getKeyStroke(KeyEvent.VK_V, 0);
+		KeyStroke imprimir   = KeyStroke.getKeyStroke(KeyEvent.VK_I, 0);
+		KeyStroke email      = KeyStroke.getKeyStroke(KeyEvent.VK_E, 0);
+		KeyStroke whatsapp   = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0);
+		
+		// Definindo ações dos itens de menu
+		Action actionVisualizar = new ShortcutAction("Visualizar (PDF)"          , KeyEvent.VK_V, visualizar, (event) -> actionReport  ());
+		Action actionImprimir   = new ShortcutAction("Imprimir diretamente"      , KeyEvent.VK_I, imprimir  , (event) -> actionPrint   ());
+		Action actionEmail      = new ShortcutAction("Enviar e-mail"             , KeyEvent.VK_E, email     , (event) -> actionEmail   ());
+		Action actionWhatsapp   = new ShortcutAction("Enviar Mensagem (Whatsapp)", KeyEvent.VK_W, whatsapp  , (event) -> actionWhatsapp());
+		
+		// Declarando os itens de menu
+		JMenuItem itemFicha = new JMenuItem(actionVisualizar);
+		popupMenu.add(itemFicha);
+		
+		JMenuItem itemImprimir = new JMenuItem(actionImprimir);
+		popupMenu.add(itemImprimir);
+		
+		popupMenu.addSeparator();
+		
+		JMenuItem itemEmail = new JMenuItem(actionEmail);
+		popupMenu.add(itemEmail);
+		
+		JMenuItem itemWhatsapp = new JMenuItem(actionWhatsapp);
+		popupMenu.add(itemWhatsapp);
+		
+		// Definindo atalhos de teclado
+		final InputMap  imap = tableCandidatos.getInputMap (JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		final ActionMap amap = tableCandidatos.getActionMap();
+		
+		imap.put(visualizar, "actionVisualizar");
+		imap.put(imprimir  , "actionImprimir"  );
+		imap.put(email     , "actionEmail"     );
+		imap.put(whatsapp  , "actionWhatsapp"  );
+		
+		amap.put("actionVisualizar", actionVisualizar);
+		amap.put("actionImprimir"  , actionImprimir  );
+		amap.put("actionEmail"     , actionEmail     );
+		amap.put("actionWhatsapp"  , actionWhatsapp  );
+		
+		// Atribuindo menu à tabela
+		tableCandidatos.setComponentPopupMenu(popupMenu);
+		
+	}
+	
+	/********************** Bloco de Tratamento de Eventos ********************************/
+	
+	/** Motor de busca de candidato. */
+	private synchronized void actionBusca() {
 		
 		// Criando uma nova lista interna
 		this.listaFiltrados = new ArrayList<Candidato>();
@@ -270,207 +373,221 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	@Override
-	public void dispose() {
+	/** Abre um novo email com o endereço do candidato selecionado na tabela. */
+	private void actionEmail() {
 		
-		//System.err.close();
-		//stderr.close();
+		// Recupera o candidato selecionado na tabela
+		final Candidato candidato = TableUtils.getSelected(tableCandidatos, listaFiltrados);
 		
-		super.dispose();
+		if (candidato != null)
+			HostUtils.sendEmail(candidato.getEmail());
 		
 	}
 	
-	/** Inicializa a barra de menu e seus subitens */
-	private void onCreateOptionsMenu() {
-		JMenuBar menuBar = new JMenuBar();
+	/** Imprime diretamente na impressora padrão do sistema os dados do candidato selecionado. */
+	private void actionPrint() {
 		
-		JMenu menuArquivo = new JMenu("Arquivo");
-		menuBar.add(menuArquivo);
-		
-		JMenuItem itemReload = new JMenuItem("Recarregar Planilhas");
-		itemReload.addActionListener((event) -> loadSheets());
-		menuArquivo.add(itemReload);
-		
-		JMenuItem itemDownload = new JMenuItem("Baixar Planilhas");
-		itemDownload.addActionListener((event) -> downloadSheets());
-		menuArquivo.add(itemDownload);
-		
-		JMenuItem itemSair = new JMenuItem("Sair");
-		itemSair.addActionListener((event) -> dispose());
-		
-		menuArquivo.addSeparator();
-		menuArquivo.add(itemSair);
-		
-		JMenu menuBusca = new JMenu("Busca");
-		menuBar.add(menuBusca);
-		
-		itemRuntime = new JRadioButtonMenuItem("Busca em Tempo Real");
-		itemRuntime.setSelected(false);
-		itemRuntime.addActionListener((event) -> toggleRuntimeSearch(itemRuntime.isSelected()));
-		menuBusca.add(itemRuntime);
-		
-		setJMenuBar(menuBar);
-	}
+		// Recupera o candidato selecionado na tabela
+		final Candidato candidato = TableUtils.getSelected(tableCandidatos, listaFiltrados);
 
-	/** Adiciona um popup menu às linhas da tabela */
-	private void onCreateOptionsPopupMenu() {
-		
-		JPopupMenu popupMenu = new JPopupMenu();
-		
-		JMenuItem itemFicha = new JMenuItem("Exibir Ficha");
-		itemFicha.addActionListener((event) -> mostrarFicha());
-		popupMenu.add(itemFicha);
-		
-		tableResultado.setComponentPopupMenu(popupMenu);
+		if (candidato != null) {
+			
+			// Método de alto processamento, logo, vai para uma Thread
+			Thread printThread = new Thread(() -> {
+			
+				try {
+					
+					utilMessageLabel(bundle.getString("buscand-action-print-loadMsg"), true);
+					
+					FichaCandidato.print(candidato);
+						
+				} catch (Exception exception) {
+					
+					exception.printStackTrace();
+					AlertDialog.error(bundle.getString("buscand-action-print-title"), bundle.getString("buscand-action-print-error"));
+						
+				}
+				finally {
+					
+					utilMessageLabel(null, false);
+					
+				}
+				
+			});
+			
+			printThread.setName(bundle.getString("buscand-action-print-thread"));
+			printThread.start();
+			
+		}
 		
 	}
 	
-	
-	
-	
-	
-	/** Exibe a ficha com os dados do candidato selecionado */
-	private void mostrarFicha() {
+	/** Exibe a ficha com os dados do candidato selecionado na tabela. */
+	private void actionReport() {
 		
-		Candidato candidato = TableUtils.getSelected(tableResultado, listaFiltrados);
+		// Recupera o candidato selecionado na tabela
+		final Candidato candidato = TableUtils.getSelected(tableCandidatos, listaFiltrados);
 		
 		if (candidato != null) {
 			
-			try {
-				FichaCandidato.show(candidato);
-			} catch (Exception exception) {
-				AlertDialog.error("Falha ao gerar visualização!");
-			}
+			// Método de alto processamento, logo, vai para uma Thread
+			Thread reportThread = new Thread(() -> {
+			
+				try {
+					
+					utilMessageLabel(bundle.getString("buscand-action-report-loadMsg"), true);
+					
+					FichaCandidato.show(candidato);
+						
+				} catch (Exception exception) {
+					
+					exception.printStackTrace();
+					AlertDialog.error(bundle.getString("buscand-action-report-title"), bundle.getString("buscand-action-report-error"));
+						
+				}
+				finally {
+					
+					utilMessageLabel(null, false);
+					
+				}
+				
+			});
+			
+			reportThread.setName(bundle.getString("buscand-action-report-thread"));
+			reportThread.start();
 			
 		}
 		
 	}
 	
-	
-	/** Carrega os candidatos para a memória */
-	private void loadSheets() {
+	/** Abre um novo chat no WhatsApp (PC) com o número do candidato selecionado na tabela. */
+	private void actionWhatsapp() {
 		
-		Runnable job  = () -> carregaPlanilhas();
-		Thread thread = new Thread(job);
+		// Recupera o candidato selecionado na tabela
+		final Candidato candidato = TableUtils.getSelected(tableCandidatos, listaFiltrados);
 		
-		thread.setName("Thread de Carregamento de Planilhas");
-		thread.start();
-		
-	}
-	
-	/** Faz o download de novas planilhas da rede */
-	private void downloadSheets() {
-		
-		Runnable job  = () -> DownloadManager.updateSheets();
-		Thread thread = new Thread(job);
-		
-		thread.setName("Thread de Download de Planilhas");
-		thread.start();
+		if (candidato != null)
+			HostUtils.sendWhatsApp(candidato.getWhatsApp(), null);
 		
 	}
 	
-	/** Ativa ou desativa os campos de entrada de dados */
-	private void turnFieldsEditable(boolean isEditable) {
-		
-		textNome.setEditable(isEditable);
-		textCPF .setEditable(isEditable);
-		textRG  .setEditable(isEditable);
-		comboConcurso.setEnabled(isEditable);
-		
-		botaoLimpar.setEnabled(isEditable);
-		
-		if (isEditable && itemRuntime.isSelected())
-			toggleRuntimeSearch(true);
-		else
-			toggleRuntimeSearch(false);
-		
-	}
+	/************************** Bloco de Métodos Utilitários ******************************/
 	
-	/** Ativa ou desativa a busca em tempo de execução */
-	private void toggleRuntimeSearch(boolean enableRuntime) {
+	/** Limpa os dados de pesquisa. */
+	private void utilClear() {
 		
-		if (enableRuntime) {
-			textNome.getDocument().addDocumentListener(this);
-			textRG  .getDocument().addDocumentListener(this);
-			textCPF .getDocument().addDocumentListener(this);
-			//comboConcurso.addActionListener(this);
-		}
-		else {
-			textNome.getDocument().removeDocumentListener(this);
-			textRG  .getDocument().removeDocumentListener(this);
-			textCPF .getDocument().removeDocumentListener(this);
-			//comboConcurso.removeActionListener(this);
-		}
-		
-	}
-
-	/** Limpa os campos de texto */
-	private void limpar() {
 		textNome.setText(null);
-		textCPF.setText(null);
-		textRG.setText(null);
+		textCPF .setText(null);
+		textRG  .setText(null);
 		
-		comboConcurso.setSelectedIndex(0);
+		comboConcurso  .setSelectedIndex(0);
+		checkPagoIsento.setSelected(false);
+		
 		textNome.requestFocus();
 	}
 	
-	@Override
-	public void changedUpdate(DocumentEvent event) {
-		buscaCandidato();
-	}
-
-	@Override
-	public void insertUpdate(DocumentEvent event) {
-		changedUpdate(event);
-	}
-
-	@Override
-	public void removeUpdate(DocumentEvent event) {
-		changedUpdate(event);
-	}
-	
-	/** Método que atualiza as informações do comboBox */
-	private void updateCombo(Set<String> keys) {
+	/** Ativa ou desativa os campos de entrada de dados.
+	 *  @param lock - tranca ou destranca os campos de pesquisa */
+	private void utilLockFields(final boolean lock) {
 		
-		comboConcurso.removeAllItems();
+		final boolean enable = !lock;
 		
-		for (String concurso: keys)
-			comboConcurso.addItem(concurso);
-		comboConcurso.addItem("Todos");
-
-		comboConcurso.addActionListener((event) -> buscaCandidato());
+		SwingUtilities.invokeLater(() -> {
+		
+			textNome       .setEditable(enable);
+			textCPF        .setEditable(enable);
+			textRG         .setEditable(enable);
+			comboConcurso  .setEnabled (enable);
+			checkPagoIsento.setEnabled (enable);
+			botaoLimpar    .setEnabled (enable);
+			tableCandidatos .setEnabled (enable);
+			
+		});
 		
 	}
 	
-	/** Método que realiza o carregamento da lista de candidatos para a memória */
-	private void carregaPlanilhas() {
+	/** Exibe uma mensagem no label de informações.
+	 *  @param message - mensagem a ser exibida. Se 'null', o label é ocultado
+	 *  @param showLoadingIcon - exibe ou não o ícone de carregamento */
+	private void utilMessageLabel(final String message, final boolean showLoadingIcon) {
 		
-		try {
+		SwingUtilities.invokeLater(() -> {
 			
-			SwingUtilities.invokeLater(() -> turnFieldsEditable(false));
+			if (message == null)
+				labelInfos.setVisible(false);
 			
-			mapaCandidatos = CandidatoDAO.load();
+			else {
+				
+				labelInfos.setVisible(true);
+				labelInfos.setText(message);
+				labelInfos.setIcon(showLoadingIcon ? loading : null);
+				
+			}
 			
-			/*candidatoDAO = new CandidatoDAO();
-			candidatoDAO.load();
-			candidatoDAO.sort();*/
-			
-			SwingUtilities.invokeLater(() -> updateCombo(mapaCandidatos.keySet()));
-			
-		}
-		catch (Exception exception) {
-			exception.printStackTrace();
-		}
-		finally {
-			SwingUtilities.invokeLater(() -> turnFieldsEditable(true));
-		}
+		});
 		
 	}
+	
+	/** Carrega os concursos para o comboBox. */
+	private void utilUpdateCombo() {
+		
+		SwingUtilities.invokeLater(() -> {
+		
+			comboConcurso.removeAllItems();
+			
+			for (String concurso: mapaCandidatos.keySet())
+				comboConcurso.addItem(concurso);
+			
+			comboConcurso.addItem("Todos");
+		
+		});
+		
+	}
+	
+	/****************************** Bloco de Threads **************************************/
+	
+	/** Faz o download de novas planilhas da rede. */
+	private void threadDownloadSheets() {
+		
+		Thread downloadThread = new Thread(() -> DownloadManager.updateSheets());
+		
+		downloadThread.setName(bundle.getString("buscand-thread-download-thead"));
+		downloadThread.start();
+		
+	}
+	
+	/** Cria um mapa com os dados provenientes das planilhas de listagens de candidatos. */
+	private void threadLoadSheets() {
+		
+		Thread loadThread = new Thread(() -> {
+		
+			try {
+	
+				utilLockFields(true);
+				
+				mapaCandidatos = CandidatoDAO.load();
+				
+				utilUpdateCombo();
+				
+				
+			}
+			catch (Exception exception) {
+				
+				exception.printStackTrace();
+				AlertDialog.error(bundle.getString("buscand-thread-sheets-title"), bundle.getString("buscand-thread-sheets-error"));
+				
+			}
+			finally {
+				
+				utilLockFields(false);
+				
+			}
+			
+		});
+		
+		loadThread.setName(bundle.getString("buscand-thread-sheets-thead"));
+		loadThread.start();
+		
+	}
+	
 }

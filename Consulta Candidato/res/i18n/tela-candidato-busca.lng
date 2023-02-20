@@ -7,3 +7,27 @@ hint-combo-concurso    = Filtrar por concurso
 hint-check-pago-isento = Filtrar apenas inscrições pagas ou com isenção confirmada
 
 hint-button-clear = Limpar campos de texto
+
+########## Métodos
+! TelaBuscaCandidato::actionPrint
+buscand-action-print-thread  = Thread de impressão de candidato
+buscand-action-print-loadMsg = Imprimindo dados do candidato selecionado...
+buscand-action-print-title   = Imprimindo dados de candidato
+buscand-action-print-error   = Falha ao imprimir dados do candidato!\n\
+                               Consulte os arquivos de tracing para mais informações.
+
+! TelaBuscaCandidato::actionReport
+buscand-action-report-thread  = Thread de visualização de candidato
+buscand-action-report-loadMsg = Gerando visualização...
+buscand-action-report-title   = Visualizando candidato
+buscand-action-report-error   = Falha ao gerar visualização!\n\
+                                Consulte os arquivos de tracing para mais informações.
+
+! TelaBuscaCandidato::threadDownloadSheets
+buscand-thread-download-thead = Thread de download de planilhas
+
+! TelaBuscaCandidato::threadLoadSheets
+buscand-thread-sheets-thead = Thread de carregamento de planilhas
+buscand-thread-sheets-title = Carregando planilhas
+buscand-thread-sheets-error = Falha ao carregar planilhas!\n\
+                              Consulte os arquivos de tracing para mais informações.
