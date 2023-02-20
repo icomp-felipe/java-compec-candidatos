@@ -49,6 +49,10 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 	
 	private ArrayList<Candidato> listaFiltrados;
 
+	public static void main(String[] args) {
+		new TelaBuscaCandidato();
+	}
+	
 	public TelaBuscaCandidato() {
 		super("Busca de Candidato");
 		
