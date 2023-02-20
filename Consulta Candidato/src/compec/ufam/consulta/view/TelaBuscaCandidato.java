@@ -16,6 +16,7 @@ import com.phill.libs.table.JTableMouseListener;
 import com.phill.libs.table.LockedTableModel;
 import com.phill.libs.table.TableUtils;
 import com.phill.libs.ui.AlertDialog;
+import com.phill.libs.ui.ESCDispose;
 import com.phill.libs.ui.GraphicsHelper;
 import com.phill.libs.ui.KeyReleasedListener;
 
@@ -24,12 +25,13 @@ import compec.ufam.consulta.utils.*;
 
 /** Classe que implementa a interface de busca e visualização de candidatos.
  *  @author Felipe André
- *  @version 1.0, 22/08/2015 */
+ *  @version 2.0, 20/FEV/2023 */
 public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 
-	private static final long serialVersionUID = 1L;
+	// Serial
+	private static final long serialVersionUID = 804215921125761987L;
 	
-	private CandidatoDAO candidatoDAO;
+	// Declaração de atributos gráficos
 	
 	private final JTable tableResultado;
     private final String[] colunas = new String [] {"Concurso","Inscrição","Nome do Candidato","Data de Nasc.","RG","CPF"};
@@ -47,79 +49,72 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 	
 	private ArrayList<Candidato> listaFiltrados;
 
-	/** Instancia e inicializa o sistema */
 	public TelaBuscaCandidato() {
-		
 		super("Busca de Candidato");
 		
-		Font  fonte = GraphicsHelper.getInstance().getFont();
-		Color color = GraphicsHelper.getInstance().getColor();
-		Color label = new Color(32,43,194);
-		
-		setSize(800,500);
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		setLocationRelativeTo(null);
-		setResizable(false);
-		
+		// Inicializando atributos gráficos
+		GraphicsHelper instance = GraphicsHelper.getInstance();
+		//GraphicsHelper.setFrameIcon(this,"icon/windows-icon.png");
+		ESCDispose.register(this);
 		getContentPane().setLayout(null);
 		
+		// Recuperando ícones
+		//final Icon clearIcon = ResourceManager.getIcon("icon/brush.png", 20, 20);
+		
+		// Recuperando fontes e cores
+		Font  fonte  = instance.getFont ();
+		Font  ubuntu = instance.getUbuntuFont();
+		Color color  = instance.getColor();
+		
+		// Painel 'Busca'
 		JPanel painelBusca = new JPanel();
-		painelBusca.setOpaque(false);
 		painelBusca.setBorder(GraphicsHelper.getInstance().getTitledBorder("Busca"));
 		painelBusca.setBounds(12, 12, 776, 83);
-		getContentPane().add(painelBusca);
 		painelBusca.setLayout(null);
+		getContentPane().add(painelBusca);
 		
 		JLabel labelNome = new JLabel("Nome:");
-		labelNome.setForeground(label);
+		labelNome.setForeground(color);
 		labelNome.setFont(fonte);
 		labelNome.setBounds(12, 26, 70, 15);
 		painelBusca.add(labelNome);
 		
 		textNome = new JTextField();
-		textNome.setEditable(false);
 		textNome.setFont(fonte);
-		textNome.setForeground(color);
 		textNome.setBounds(63, 24, 701, 20);
 		painelBusca.add(textNome);
-		textNome.setColumns(10);
 		
 		JLabel labelCPF = new JLabel("CPF:");
-		labelCPF.setForeground(label);
+		labelCPF.setForeground(color);
 		labelCPF.setFont(fonte);
 		labelCPF.setBounds(12, 53, 70, 15);
 		painelBusca.add(labelCPF);
 		
 		textCPF = new CPFTextField();
 		textCPF.setFocusLostBehavior(JFormattedTextField.PERSIST);
-		textCPF.setEditable(false);
 		textCPF.setFont(fonte);
-		textCPF.setForeground(color);
 		textCPF.setBounds(63, 51, 121, 20);
 		painelBusca.add(textCPF);
 		
 		JLabel labelRG = new JLabel("RG:");
-		labelRG.setForeground(label);
+		labelRG.setForeground(color);
 		labelRG.setFont(fonte);
 		labelRG.setBounds(196, 53, 70, 15);
 		painelBusca.add(labelRG);
 		
 		textRG = new JTextField();
-		textRG.setEditable(false);
 		textRG.setFont(fonte);
-		textRG.setForeground(color);
 		textRG.setBounds(234, 51, 121, 20);
 		painelBusca.add(textRG);
 		
 		JLabel labelConcurso = new JLabel("Concurso:");
-		labelConcurso.setForeground(label);
+		labelConcurso.setForeground(color);
 		labelConcurso.setFont(fonte);
 		labelConcurso.setBounds(367, 53, 87, 15);
 		painelBusca.add(labelConcurso);
 		
 		comboConcurso = new JComboBox<String>();
 		comboConcurso.setFont(fonte);
-		comboConcurso.setForeground(color);
 		comboConcurso.setBounds(448, 51, 121, 20);
 		painelBusca.add(comboConcurso);
 		
@@ -133,6 +128,31 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		botaoLimpar.setBounds(677, 51, 87, 20);
 		painelBusca.add(botaoLimpar);
 		
+		
+		
+		
+		setSize(800,500);
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		setLocationRelativeTo(null);
+		setResizable(false);
+		
+		
+
+		
+
+		
+
+		
+
+		
+
+		
+
+		
+
+		
+
+		
 		KeyListener keyListener = (KeyReleasedListener) (event) -> { if (event.getKeyCode() == KeyEvent.VK_ENTER) botaoBuscar.doClick(); };
 		
 		textNome.addKeyListener(keyListener);
@@ -140,7 +160,6 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		textRG  .addKeyListener(keyListener);
 		
 		JPanel painelResultado = new JPanel();
-		painelResultado.setOpaque(false);
 		painelResultado.setBorder(GraphicsHelper.getInstance().getTitledBorder("Resultados"));
 		painelResultado.setBounds(12, 99, 776, 315);
 		getContentPane().add(painelResultado);
@@ -172,7 +191,7 @@ public class TelaBuscaCandidato extends JFrame implements DocumentListener {
 		painelResultado.add(scrollResultado);
 		
 		JLabel labelQtd = new JLabel("Candidatos Encontrados:");
-		labelQtd.setForeground(label);
+		labelQtd.setForeground(color);
 		labelQtd.setFont(fonte);
 		labelQtd.setBounds(15, 290, 204, 15);
 		painelResultado.add(labelQtd);
