@@ -28,7 +28,7 @@ import compec.ufam.consulta.model.*;
 import compec.ufam.consulta.utils.*;
 
 /** Classe que implementa a interface de busca e visualização de candidatos.
- *  @author Felipe André
+ *  @author Felipe André - felipeandresouza@hotmail.com
  *  @version 2.0, 20/FEV/2023 */
 public class TelaBuscaCandidato extends JFrame {
 
@@ -552,15 +552,20 @@ public class TelaBuscaCandidato extends JFrame {
 	private void threadDownloadSheets() {
 		
 		Thread downloadThread = new Thread(() -> {
+			
 			try {
+				
 				DownloadManager.run(labelInfos);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				
+			} catch (IOException exception) {
+				
+				exception.printStackTrace();
+				AlertDialog.error(bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-error"));
+				
 			}
 		});
 		
-		downloadThread.setName(bundle.getString("buscand-thread-download-thead"));
+		downloadThread.setName(bundle.getString("buscand-thread-download-title"));
 		downloadThread.start();
 		
 	}

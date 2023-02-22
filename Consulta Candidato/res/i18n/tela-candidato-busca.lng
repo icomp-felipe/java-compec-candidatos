@@ -26,7 +26,9 @@ buscand-action-report-error   = Falha ao gerar visualização!\n\
                                 Consulte os arquivos de tracing para mais informações.
 
 ! TelaBuscaCandidato::threadDownloadSheets
-buscand-thread-download-thead = Thread de download de planilhas
+buscand-thread-download-title = Thread de download de planilhas
+buscand-thread-download-error = Falha ao baixar planilhas!\n\
+                                Consulte os arquivos de tracing para mais informações.
 
 ! TelaBuscaCandidato::threadLoadSheets
 buscand-thread-sheets-thead = Thread de carregamento de planilhas

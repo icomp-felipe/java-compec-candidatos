@@ -1,16 +1,15 @@
 package compec.ufam.consulta.model;
 
-import com.phill.libs.StringUtils;
-import com.phill.libs.br.CPFParser;
-import com.phill.libs.br.PhoneNumberUtils;
-import com.phill.libs.table.JTableRowData;
+import com.phill.libs.*;
+import com.phill.libs.br.*;
+import com.phill.libs.table.*;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
+import org.joda.time.*;
+import org.joda.time.format.*;
 
 /** Modelagem de um candidato.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0 - 18/FEV/2023 */
+ *  @version 2.0 - 22/FEV/2023 */
 public class Candidato implements JTableRowData {
 	
 	// Dados pessoais

@@ -1,26 +1,17 @@
 package compec.ufam.consulta.model;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.util.*;
 
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.hssf.usermodel.*;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-
-import com.phill.libs.ResourceManager;
-import com.phill.libs.files.PhillFileUtils;
+import com.phill.libs.*;
+import com.phill.libs.files.*;
 
 /** Classe responsável pela extração de dados dos candidatos a partir das planilhas do Excel contidas em 'res/sheets'.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0 - 18/FEV/2023 */
+ *  @version 2.0 - 22/FEV/2023 */
 public class CandidatoDAO {
 
 	private static final File sheets = ResourceManager.getResourceAsFile("sheets");

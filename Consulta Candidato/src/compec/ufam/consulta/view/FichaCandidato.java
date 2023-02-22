@@ -29,7 +29,7 @@ import net.sf.jasperreports.view.JasperViewer;
 
 /** Classe responsável pela geração do relatório 'Ficha de Candidato'.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0, 20/FEV/2023 */
+ *  @version 2.0, 22/FEV/2023 */
 public class FichaCandidato {
 	
 	/** Exibe o relatório de 'Ficha de Colaborador' com os dados de um <code>colaborador</code>.
