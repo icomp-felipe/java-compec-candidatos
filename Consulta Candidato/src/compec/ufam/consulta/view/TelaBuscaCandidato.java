@@ -1,77 +1,66 @@
 package compec.ufam.consulta.view;
 
+import java.io.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.IOException;
 
 import javax.swing.event.*;
 import javax.swing.table.*;
 
-import com.phill.libs.ResourceManager;
-import com.phill.libs.br.CPFTextField;
-import com.phill.libs.i18n.PropertyBundle;
-import com.phill.libs.sys.HostUtils;
-import com.phill.libs.table.JTableMouseListener;
-import com.phill.libs.table.LockedTableModel;
-import com.phill.libs.table.TableUtils;
-import com.phill.libs.ui.AlertDialog;
-import com.phill.libs.ui.DocumentChangeListener;
-import com.phill.libs.ui.ESCDispose;
-import com.phill.libs.ui.GraphicsHelper;
-import com.phill.libs.ui.ShortcutAction;
+import com.phill.libs.*;
+import com.phill.libs.br.*;
+import com.phill.libs.ui.*;
+import com.phill.libs.sys.*;
+import com.phill.libs.i18n.*;
+import com.phill.libs.table.*;
 
 import compec.ufam.consulta.model.*;
 import compec.ufam.consulta.utils.*;
 
 /** Classe que implementa a interface de busca e visualização de candidatos.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0, 20/FEV/2023 */
+ *  @version 2.0, 22/FEV/2023 */
 public class TelaBuscaCandidato extends JFrame {
 
 	// Serial
 	private static final long serialVersionUID = 804215921125761987L;
 	
-	// Declaração de atributos gráficos
-	
-	private final JTable tableCandidatos;
-	private final DefaultTableModel modelo;
-	
-	private final JComboBox<String> comboConcurso;
+	// Atributos gráficos
 	private final JTextField textNome, textRG;
 	private final JFormattedTextField textCPF;
-	
-	private final JButton buttonClear;
+	private final JComboBox<String> comboConcurso;
+	private final JCheckBox checkPagoIsento;
+	private final JButton buttonClear, buttonRefresh, buttonDownload;
+	private final JTable tableCandidatos;
+	private final DefaultTableModel modelo;
 	private final JLabel labelInfos, textQtd;
+	private final ImageIcon loadingIcon;
 	
-	//private final PrintStream stdout, stderr;
-	
+	// Atributos dinâmicos
+	private boolean loading;
 	private Map<String, List<Candidato>> mapaCandidatos;
 	private ArrayList<Candidato> listaFiltrados;
 	
-	private final ImageIcon loadingIcon;
+	// Redirecionamento da stream de erros
+	private final PrintStream stderr;
 	
 	// Carregando bundle de idiomas
 	private final static PropertyBundle bundle = new PropertyBundle("i18n/tela-candidato-busca", null);
-	private JCheckBox checkPagoIsento;
-	private JButton buttonRefresh;
-	private JButton buttonDownload;
 	
-	private boolean loading;
-
 	public static void main(String[] args) {
 		new TelaBuscaCandidato();
 	}
 	
 	public TelaBuscaCandidato() {
-		super("Busca de Candidato");
+		super("SisCand v.2.0 - Lista de Candidatos");
 		
 		// Inicializando atributos gráficos
 		GraphicsHelper instance = GraphicsHelper.getInstance();
-		//GraphicsHelper.setFrameIcon(this,"icon/windows-icon.png");
+		GraphicsHelper.setFrameIcon(this,"icon/siscand-icon.png");
 		ESCDispose.register(this);
 		getContentPane().setLayout(null);
 		
@@ -79,6 +68,7 @@ public class TelaBuscaCandidato extends JFrame {
 		final Icon clearIcon    = ResourceManager.getIcon("icon/brush.png"          , 20, 20);
 		final Icon downloadIcon = ResourceManager.getIcon("icon/globe_3.png"        , 20, 20);
 		final Icon refreshIcon  = ResourceManager.getIcon("icon/playback_reload.png", 20, 20);
+		
 		this.loadingIcon = new ImageIcon(ResourceManager.getResource("icon/loading.gif"));
 		
 		// Recuperando fontes e cores
@@ -237,11 +227,7 @@ public class TelaBuscaCandidato extends JFrame {
 		textCPF .getDocument().addDocumentListener(docListener);
 		textRG  .getDocument().addDocumentListener(docListener);
 		
-		/*stdout = new PrintStream(new StdoutManager(labelInfos));
-		stderr = new PrintStream(new StderrManager());
-		
-		System.setOut(stdout);
-		System.setErr(stderr);*/
+		this.stderr = new PrintStream(new StderrManager()); System.setErr(stderr);
 		
 		createPopupMenu();
 		threadLoadSheets();
@@ -256,20 +242,6 @@ public class TelaBuscaCandidato extends JFrame {
 		
 	}
 	
-	
-	
-	
-	@Override
-	public void dispose() {
-		
-		//System.err.close();
-		//stderr.close();
-		
-		super.dispose();
-		
-	}
-	
-
 	/** Adiciona um popup menu às linhas da tabela */
 	private void createPopupMenu() {
 		
@@ -457,6 +429,15 @@ public class TelaBuscaCandidato extends JFrame {
 		
 		if (candidato != null)
 			HostUtils.sendWhatsApp(candidato.getWhatsApp(), null);
+		
+	}
+	
+	@Override
+	public void dispose() {
+		
+		System.err.close(); stderr.close();
+		
+		super.dispose();
 		
 	}
 	
