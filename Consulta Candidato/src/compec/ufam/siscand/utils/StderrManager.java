@@ -1,4 +1,4 @@
-package compec.ufam.consulta.utils;
+package compec.ufam.siscand.utils;
 
 import java.io.*;
 import com.phill.libs.*;

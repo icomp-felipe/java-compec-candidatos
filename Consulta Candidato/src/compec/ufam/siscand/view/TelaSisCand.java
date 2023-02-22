@@ -1,4 +1,4 @@
-package compec.ufam.consulta.view;
+package compec.ufam.siscand.view;
 
 import java.io.*;
 import java.awt.*;
@@ -18,13 +18,13 @@ import com.phill.libs.sys.*;
 import com.phill.libs.i18n.*;
 import com.phill.libs.table.*;
 
-import compec.ufam.consulta.model.*;
-import compec.ufam.consulta.utils.*;
+import compec.ufam.siscand.model.*;
+import compec.ufam.siscand.utils.*;
 
 /** Classe que implementa a interface de busca e visualização de candidatos.
  *  @author Felipe André - felipeandresouza@hotmail.com
  *  @version 2.0, 22/FEV/2023 */
-public class TelaBuscaCandidato extends JFrame {
+public class TelaSisCand extends JFrame {
 
 	// Serial
 	private static final long serialVersionUID = 804215921125761987L;
@@ -52,10 +52,10 @@ public class TelaBuscaCandidato extends JFrame {
 	private final static PropertyBundle bundle = new PropertyBundle("i18n/tela-candidato-busca", null);
 	
 	public static void main(String[] args) {
-		new TelaBuscaCandidato();
+		new TelaSisCand();
 	}
 	
-	public TelaBuscaCandidato() {
+	public TelaSisCand() {
 		super("SisCand v.2.0 - Lista de Candidatos");
 		
 		// Inicializando atributos gráficos

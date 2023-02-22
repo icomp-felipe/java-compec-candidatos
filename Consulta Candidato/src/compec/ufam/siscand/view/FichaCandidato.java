@@ -1,31 +1,20 @@
-package compec.ufam.consulta.view;
+package compec.ufam.siscand.view;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.sql.*;
+import java.util.*;
+import java.awt.image.*;
 
-import java.sql.SQLException;
+import javax.imageio.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
+import com.phill.libs.*;
 
-import javax.imageio.ImageIO;
+import compec.ufam.siscand.model.*;
 
-import java.awt.image.BufferedImage;
-
-import com.phill.libs.ResourceManager;
-
-import compec.ufam.consulta.model.Candidato;
-
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperPrintManager;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import net.sf.jasperreports.engine.util.JRLoader;
-import net.sf.jasperreports.view.JasperViewer;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.view.*;
+import net.sf.jasperreports.engine.data.*;
+import net.sf.jasperreports.engine.util.*;
 
 /** Classe responsável pela geração do relatório 'Ficha de Candidato'.
  *  @author Felipe André - felipeandresouza@hotmail.com

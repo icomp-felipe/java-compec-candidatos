@@ -1,4 +1,4 @@
-package compec.ufam.consulta.model;
+package compec.ufam.siscand.model;
 
 import com.phill.libs.*;
 import com.phill.libs.br.*;
