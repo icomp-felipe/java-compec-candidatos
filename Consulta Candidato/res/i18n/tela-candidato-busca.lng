@@ -12,26 +12,26 @@ hint-button-download = Baixa novas planilhas do servidor
 
 ########## Métodos
 ! TelaBuscaCandidato::actionPrint
-buscand-action-print-thread  = Thread de impressão de candidato
+buscand-action-print-thread  = SisCand v.2.0 - Thread de impressão de candidato
 buscand-action-print-loadMsg = Imprimindo dados do candidato selecionado...
-buscand-action-print-title   = Imprimindo dados de candidato
+buscand-action-print-title   = SisCand v.2.0 - Imprimindo dados de candidato
 buscand-action-print-error   = Falha ao imprimir dados do candidato!\n\
                                Consulte os arquivos de tracing para mais informações.
 
 ! TelaBuscaCandidato::actionReport
-buscand-action-report-thread  = Thread de visualização de candidato
+buscand-action-report-thread  = SisCand v.2.0 - Thread de visualização de candidato
 buscand-action-report-loadMsg = Gerando visualização...
-buscand-action-report-title   = Visualizando candidato
+buscand-action-report-title   = SisCand v.2.0 - Visualizando candidato
 buscand-action-report-error   = Falha ao gerar visualização!\n\
                                 Consulte os arquivos de tracing para mais informações.
 
 ! TelaBuscaCandidato::threadDownloadSheets
-buscand-thread-download-title = Thread de download de planilhas
+buscand-thread-download-title = SisCand v.2.0 - Thread de download de planilhas
 buscand-thread-download-error = Falha ao baixar planilhas!\n\
                                 Consulte os arquivos de tracing para mais informações.
 
 ! TelaBuscaCandidato::threadLoadSheets
-buscand-thread-sheets-thead = Thread de carregamento de planilhas
+buscand-thread-sheets-thead = SisCand v.2.0 - Thread de carregamento de planilhas
 buscand-thread-sheets-title = Carregando planilhas
 buscand-thread-sheets-error = Falha ao carregar planilhas!\n\
                               Consulte os arquivos de tracing para mais informações.
