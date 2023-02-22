@@ -67,6 +67,7 @@ public class TelaSisCand extends JFrame {
 		// Recuperando ícones
 		final Icon clearIcon    = ResourceManager.getIcon("icon/brush.png"          , 20, 20);
 		final Icon downloadIcon = ResourceManager.getIcon("icon/globe_3.png"        , 20, 20);
+		final Icon saveIcon     = ResourceManager.getIcon("icon/save.png"           , 20, 20);
 		final Icon refreshIcon  = ResourceManager.getIcon("icon/playback_reload.png", 20, 20);
 		
 		this.loadingIcon = new ImageIcon(ResourceManager.getResource("icon/loading.gif"));
@@ -202,22 +203,49 @@ public class TelaSisCand extends JFrame {
 		textQtd.setBounds(105, 443, 70, 15);
 		panelCandidatos.add(textQtd);
 		
+		// Painel 'Servidor Remoto'
+		JPanel panelServer = new JPanel();
+		panelServer.setBorder(instance.getTitledBorder("Servidor Remoto"));
+		panelServer.setBounds(10, 568, 1004, 55);
+		getContentPane().add(panelServer);
+		panelServer.setLayout(null);
+		
+		JLabel labelEndereco = new JLabel("Endereço:");
+		labelEndereco.setHorizontalAlignment(JLabel.RIGHT);
+		labelEndereco.setForeground(color);
+		labelEndereco.setFont(fonte);
+		labelEndereco.setBounds(10, 22, 75, 25);
+		panelServer.add(labelEndereco);
+		
+		JTextField textEndereco = new JTextField(PropertiesManager.getString("net.home", null));
+		textEndereco.setFont(fonte);
+		textEndereco.setToolTipText(bundle.getString("hint-text-endereco"));
+		textEndereco.setHorizontalAlignment(JLabel.CENTER);
+		textEndereco.setBounds(90, 25, 115, 20);
+		panelServer.add(textEndereco);
+		
+		JButton buttonEnderecoSave = new JButton(saveIcon);
+		buttonEnderecoSave.addActionListener((event) -> PropertiesManager.setString("net.home", textEndereco.getText().trim(), null));
+		buttonEnderecoSave.setToolTipText(bundle.getString("hint-button-save"));
+		buttonEnderecoSave.setBounds(215, 20, 30, 25);
+		panelServer.add(buttonEnderecoSave);
+		
 		// Fundo da janela
 		labelInfos = new JLabel();
 		labelInfos.setFont(fonte);
-		labelInfos.setBounds(10, 575, 925, 25);
+		labelInfos.setBounds(10, 635, 925, 25);
 		getContentPane().add(labelInfos);
 		
 		buttonRefresh = new JButton(refreshIcon);
 		buttonRefresh.addActionListener((event) -> threadLoadSheets());
 		buttonRefresh.setToolTipText(bundle.getString("hint-button-refresh"));
-		buttonRefresh.setBounds(943, 575, 30, 25);
+		buttonRefresh.setBounds(943, 635, 30, 25);
 		getContentPane().add(buttonRefresh);
 
 		buttonDownload = new JButton(downloadIcon);
 		buttonDownload.addActionListener((event) -> threadDownloadSheets());
 		buttonDownload.setToolTipText(bundle.getString("hint-button-download"));
-		buttonDownload.setBounds(983, 575, 30, 25);
+		buttonDownload.setBounds(983, 635, 30, 25);
 		getContentPane().add(buttonDownload);
 		
 		// Listeners dos campos de texto
@@ -234,7 +262,7 @@ public class TelaSisCand extends JFrame {
 		
 		comboConcurso.addActionListener((event) -> actionBusca());
 		
-		setSize(1024,640);
+		setSize(1024,700);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -544,6 +572,12 @@ public class TelaSisCand extends JFrame {
 				AlertDialog.error(bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-error"));
 				
 			}
+			finally {
+				
+				utilMessageLabel(null, false);
+				
+			}
+			
 		});
 		
 		downloadThread.setName(bundle.getString("buscand-thread-download-title"));

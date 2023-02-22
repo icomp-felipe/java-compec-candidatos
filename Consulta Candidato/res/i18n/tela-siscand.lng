@@ -6,6 +6,9 @@ hint-text-rg   = Busca por RG
 hint-combo-concurso    = Filtrar por concurso
 hint-check-pago-isento = Filtrar apenas inscrições pagas ou com isenção confirmada
 
+hint-text-endereco = Endereço do servidor remoto para download de novas planilhas (IP ou NetBIOS)
+hint-button-save   = Salva o endereço do servidor no arquivo de propriedades do sistema
+
 hint-button-clear    = Limpar campos de texto
 hint-button-refresh  = Recarrega as planilhas
 hint-button-download = Baixa novas planilhas do servidor
@@ -28,6 +31,7 @@ buscand-action-report-error   = Falha ao gerar visualização!\n\
 ! TelaBuscaCandidato::threadDownloadSheets
 buscand-thread-download-title = SisCand v.2.0 - Thread de download de planilhas
 buscand-thread-download-error = Falha ao baixar planilhas!\n\
+                                Talvez o endereço do servidor remoto não tenha sido definido.\n\
                                 Consulte os arquivos de tracing para mais informações.
 
 ! TelaBuscaCandidato::threadLoadSheets
