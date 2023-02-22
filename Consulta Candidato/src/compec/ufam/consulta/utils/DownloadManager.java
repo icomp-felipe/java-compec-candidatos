@@ -3,8 +3,7 @@ package compec.ufam.consulta.utils;
 import java.io.*;
 import java.net.*;
 
-import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import jcifs.netbios.*;
 
@@ -12,73 +11,78 @@ import org.apache.commons.io.*;
 
 import com.phill.libs.*;
 
+/** Classe responsável pelo download de planilhas do servidor descrito no arquivo de propriedades do sistema.
+ *  @author Felipe André - felipeandresouza@hotmail.com
+ *  @version 2.0, 22/FEV/2023 */
 public class DownloadManager {
 
+	// Atributo gráfico
 	private final JLabel labelInfos;
+	
+	// Atributos de controle de download
 	private long bytesDownloaded;
+	private final int bufferSize, updateTime;
+	private final URL  serverURL;
+	private final File sheetsDir;
 	
-	
-	private final int BUFFER = 65536;
-	private final int UPDATE_INTERVAL = 250;
-	private final URL SHEETS_SERVER  = findServer();
-	private final File SHEETS_FOLDER  = ResourceManager.getResourceAsFile("sheets");
-	
+	/** Construtor privado inicializando atributos.
+	 *  @param labelInfos - label para mostrar as atualizações 
+	 *  @throws IOException quando algum erro de E/S ocorre */
+	private DownloadManager(final JLabel labelInfos) throws IOException {
+		
+		this.labelInfos = labelInfos;
+		
+		this.bufferSize = 65536;
+		this.updateTime = 250;
+		this.serverURL  = utilRetrieveServer();
+		this.sheetsDir  = ResourceManager.getResourceAsFile("sheets");
+		
+	}
 	
 	/** Baixa as planilhas de dados do servidor descrito no arquivo de propriedades do sistema.
-	 *  @param labelInfos - label para mostrar as atualizações */
+	 *  @param labelInfos - label para mostrar as atualizações
+	 *  @throws IOException quando algum erro de E/S ocorre */
 	public static void run(final JLabel labelInfos) throws IOException {
-		new DownloadManager(labelInfos).downloadSheets();
+		new DownloadManager(labelInfos).actionDownloadSheets();
 	}
 	
-	/** Construtor privado inicializando o label.
-	 *  @param labelInfos - label para mostrar as atualizações */
-	private DownloadManager(final JLabel labelInfos) {
-		this.labelInfos = labelInfos;
-	}
+	/****************************** Bloco de Threads **************************************/
 	
 	/** Baixa as planilhas do servidor descrito no arquivo de propriedades.
 	 *  @throws IOException quando os arquivos não podem ser baixados ou escritos no disco. */
-	private void downloadSheets() throws IOException {
+	private void actionDownloadSheets() throws IOException {
 		
 		// Recuperando lista de download
-		String[] downloadList = getDownloadList();
+		String[] downloadList = utilRetrieveDownloadList();
 		
 		// Apaga todos os arquivos contidos em 'res/sheets'
-		for (File arquivo: SHEETS_FOLDER.listFiles())
+		for (File arquivo: sheetsDir.listFiles())
 			arquivo.delete();
 		
 		// Baixa as planilhas do servidor
 		for (String remoteFile: downloadList) {
 			
-			URL  inputFile  = new URL (SHEETS_SERVER, remoteFile);
-			File outputFile = new File(SHEETS_FOLDER, remoteFile);
+			URL  inputFile  = new URL (serverURL, remoteFile);
+			File outputFile = new File(sheetsDir, remoteFile);
 			
-			downloadFile(inputFile, outputFile);
+			actionDownloadFile(inputFile, outputFile);
 			
 		}
 		
-	}
-	
-	/** Recupera a lista de downloads [index.txt] de planilhas do servidor.
-	 *  @return Array com os nomes dos arquivos a serem baixados.
-	 *  @throws IOException quando o arquivo 'index.txt' não pôde ser baixado do servidor. */
-	private String[] getDownloadList() throws IOException {
+		// Informando a view
+		utilMessageLabel("Planilhas baixadas com sucesso!");
 		
-		URL index = new URL(SHEETS_SERVER, "index.txt");
-		String fileList = IOUtils.toString(index, "UTF-8");
-		
-		return fileList.split("\n");
 	}
 	
 	/** Baixa um <code>arqRemoto</code> para um <code>arqDestino</code>.
 	 *  @param arqRemoto - link de um arquivo remoto
 	 *  @param arqDestino - arquivo de destino
 	 *  @throws IOException quando os arquivos não podem ser baixados ou escritos no disco. */
-	private void downloadFile(final URL arqRemoto, final File arqDestino) throws IOException {
+	private void actionDownloadFile(final URL arqRemoto, final File arqDestino) throws IOException {
 		
 		// Preparando variáveis de download
 		int bytesRead = 0;
-		final byte buffer[] = new byte[BUFFER];
+		final byte buffer[] = new byte[bufferSize];
 		
 		// Preparando streams
 		final BufferedInputStream inputStream  = new BufferedInputStream(arqRemoto.openStream());
@@ -88,102 +92,95 @@ public class DownloadManager {
 		this.bytesDownloaded = 0;
 		
 		// Inicializando o monitor de eventos
-		Thread monitor = createAndStartMonitor(arqDestino.getName());
+		Thread downloadMonitor = new Thread(() -> downloadProgressThread(arqDestino));
+		downloadMonitor.setName("Thread do monitor de download");
+		downloadMonitor.start();
 		
 		// Realizando o download propriamente dito
-		while ((bytesRead = inputStream.read(buffer,0,BUFFER)) != -1) {
+		while ((bytesRead = inputStream.read(buffer, 0, bufferSize)) != -1) {
 			
         	bytesDownloaded += bytesRead;
         	outputStream.write(buffer, 0, bytesRead);
         }
 		
 		// Limpando recursos
-		monitor.interrupt();
+		downloadMonitor.interrupt();
 		
 		inputStream .close();
 		outputStream.close();
 		
 	}
 	
+	/************************** Bloco de Métodos Utilitários ******************************/
+	
+	/** @return Tamanho dos dados baixados em um formato amigável. */
+	private String utilBytesDownloaded() {
+		
+		final double size = (double) this.bytesDownloaded;
+		
+		if (bytesDownloaded >= 1048576L)
+			return String.format("%.2f MB", size/1048576F);
+		
+		if (bytesDownloaded >= 1024L)
+			return String.format("%.2f KB", size/1024F);
+		
+		return String.format("%d bytes", bytesDownloaded);
+		
+	}
+	
 	/** Imprime uma mensagem no label.
 	 *  @param message - mensagem a ser impressa */
-	private void showMessageLabel(final String message) {
+	private void utilMessageLabel(final String message) {
 		SwingUtilities.invokeLater(() -> this.labelInfos.setText(message));
 	}
 	
-	private URL findServer() {
+	/** Recupera a lista de downloads [index.txt] de planilhas do servidor.
+	 *  @return Array com os nomes dos arquivos a serem baixados.
+	 *  @throws IOException quando o arquivo 'index.txt' não pôde ser baixado do servidor. */
+	private String[] utilRetrieveDownloadList() throws IOException {
 		
-		showMessageLabel("Buscando servidor...");
+		URL index = new URL(serverURL, "index.txt");
+		String fileList = IOUtils.toString(index, "UTF-8");
+		
+		return fileList.split("\n");
+	}
+	
+	/** Recupera o endereço IP do servidor através no nome netbios contido na variável 'net.home' do arquivo de propriedades.
+	 *  @return URL do servidor
+	 *  @throws MalformedURLException quando a variável 'net.home' é vazia ou não está no formato correto
+	 *  @throws UnknownHostException quando o servidor não pode ser atingido */
+	private URL utilRetrieveServer() throws MalformedURLException, UnknownHostException {
+		
+		utilMessageLabel("Buscando servidor...");
 		
 		String hostname = PropertiesManager.getString("net.home", null);
-		
-		try {
+		String serverIP = NbtAddress.getByName(hostname).getHostAddress();
 			
-			String serverIP = NbtAddress.getByName(hostname).getHostAddress();
-			
-			return new URL("http://" + serverIP);
-		}
-		catch (Exception exception) {
-			exception.printStackTrace();
-			return null;
-		}
+		return new URL("http://" + serverIP);
 		
 	}
 	
+	/****************************** Bloco de Threads **************************************/
 
-	
-	
-
-	
-
-	
-	private Thread createAndStartMonitor(String destination) {
-		Thread thread = new DownloadMonitor(destination);
+	/** Thread do monitor de download.
+	 *  @param planilha - planilha sendo escrita no disco */
+	private void downloadProgressThread(final File planilha) {
 		
-		thread.setName(destination + " monitor");
-		thread.start();
+		final String regex = String.format("Baixando planilha \"%s\"...", planilha.getName());
 		
-		return thread;
-	}
-	
-	private class DownloadMonitor extends Thread {
-
-		private final String message;
-		
-		public DownloadMonitor(String destination) {
-			message = String.format("Baixando planilha \"%s\"...",destination);
-		}
-		
-		private String getBytesDownloaded() {
+		do {
 			
-			final double size = (double) bytesDownloaded;
+			try {
+				
+				utilMessageLabel(regex + utilBytesDownloaded());
+				Thread.sleep(this.updateTime);
+				
+			}
+			catch (InterruptedException exception) {
+				return;
+			}
 			
-			if (bytesDownloaded >= 1048576L)
-				return String.format("%.2f MB", size/1048576F);
-			
-			if (bytesDownloaded >= 1024L)
-				return String.format("%.2f KB", size/1024F);
-			
-			return String.format("%d bytes", bytesDownloaded);
-			
-		}
-		
-		private void showProgressMessage() {
-			showMessageLabel(message + getBytesDownloaded());
-		}
-		
-		@Override
-		public void run() {
-			do {
-				try {
-					showProgressMessage();
-					sleep(UPDATE_INTERVAL);
-				}
-				catch (InterruptedException exception) {
-					return;
-				}
-			} while (true);
-		}
+		} while (true);
 		
 	}
 	
