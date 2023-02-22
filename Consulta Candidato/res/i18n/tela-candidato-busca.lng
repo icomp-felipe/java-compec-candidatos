@@ -6,7 +6,9 @@ hint-text-rg   = Busca por RG
 hint-combo-concurso    = Filtrar por concurso
 hint-check-pago-isento = Filtrar apenas inscrições pagas ou com isenção confirmada
 
-hint-button-clear = Limpar campos de texto
+hint-button-clear    = Limpar campos de texto
+hint-button-refresh  = Recarrega as planilhas
+hint-button-download = Baixa novas planilhas do servidor
 
 ########## Métodos
 ! TelaBuscaCandidato::actionPrint

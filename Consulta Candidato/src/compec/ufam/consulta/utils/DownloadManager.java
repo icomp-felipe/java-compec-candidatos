@@ -2,38 +2,126 @@ package compec.ufam.consulta.utils;
 
 import java.io.*;
 import java.net.*;
-import org.apache.commons.io.*;
-import com.phill.libs.*;
-import com.phill.libs.ui.AlertDialog;
 
-import jcifs.netbios.NbtAddress;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+
+import jcifs.netbios.*;
+
+import org.apache.commons.io.*;
+
+import com.phill.libs.*;
 
 public class DownloadManager {
 
+	private final JLabel labelInfos;
 	private long bytesDownloaded;
-	private static final int BUFFER = 65536;
-	private static final int UPDATE_INTERVAL = 250;
-	private static final String LINE_SEPARATOR = System.getProperty("file.separator");
-	private static final String SHEETS_SERVER  = findServer();
-	private static final String SHEETS_FOLDER  = ResourceManager.getResource("sheets") + LINE_SEPARATOR;
 	
-	public static void updateSheets() {
-		try { new DownloadManager().downloadSheets(); }
-		catch (IOException exception) {
-			AlertDialog.timedDisplay("Falha ao baixar planilhas!",5);
-		}
+	
+	private final int BUFFER = 65536;
+	private final int UPDATE_INTERVAL = 250;
+	private final URL SHEETS_SERVER  = findServer();
+	private final File SHEETS_FOLDER  = ResourceManager.getResourceAsFile("sheets");
+	
+	
+	/** Baixa as planilhas de dados do servidor descrito no arquivo de propriedades do sistema.
+	 *  @param labelInfos - label para mostrar as atualizações */
+	public static void run(final JLabel labelInfos) throws IOException {
+		new DownloadManager(labelInfos).downloadSheets();
 	}
 	
-	private static String findServer() {
-		System.out.print("Buscando servidor...");
-		System.out.flush();
+	/** Construtor privado inicializando o label.
+	 *  @param labelInfos - label para mostrar as atualizações */
+	private DownloadManager(final JLabel labelInfos) {
+		this.labelInfos = labelInfos;
+	}
+	
+	/** Baixa as planilhas do servidor descrito no arquivo de propriedades.
+	 *  @throws IOException quando os arquivos não podem ser baixados ou escritos no disco. */
+	private void downloadSheets() throws IOException {
 		
-		String hostname = PropertiesManager.getString("net.home",null);
+		// Recuperando lista de download
+		String[] downloadList = getDownloadList();
+		
+		// Apaga todos os arquivos contidos em 'res/sheets'
+		for (File arquivo: SHEETS_FOLDER.listFiles())
+			arquivo.delete();
+		
+		// Baixa as planilhas do servidor
+		for (String remoteFile: downloadList) {
+			
+			URL  inputFile  = new URL (SHEETS_SERVER, remoteFile);
+			File outputFile = new File(SHEETS_FOLDER, remoteFile);
+			
+			downloadFile(inputFile, outputFile);
+			
+		}
+		
+	}
+	
+	/** Recupera a lista de downloads [index.txt] de planilhas do servidor.
+	 *  @return Array com os nomes dos arquivos a serem baixados.
+	 *  @throws IOException quando o arquivo 'index.txt' não pôde ser baixado do servidor. */
+	private String[] getDownloadList() throws IOException {
+		
+		URL index = new URL(SHEETS_SERVER, "index.txt");
+		String fileList = IOUtils.toString(index, "UTF-8");
+		
+		return fileList.split("\n");
+	}
+	
+	/** Baixa um <code>arqRemoto</code> para um <code>arqDestino</code>.
+	 *  @param arqRemoto - link de um arquivo remoto
+	 *  @param arqDestino - arquivo de destino
+	 *  @throws IOException quando os arquivos não podem ser baixados ou escritos no disco. */
+	private void downloadFile(final URL arqRemoto, final File arqDestino) throws IOException {
+		
+		// Preparando variáveis de download
+		int bytesRead = 0;
+		final byte buffer[] = new byte[BUFFER];
+		
+		// Preparando streams
+		final BufferedInputStream inputStream  = new BufferedInputStream(arqRemoto.openStream());
+		final FileOutputStream    outputStream = new FileOutputStream   (arqDestino);
+		
+		// Inicializando o contador de bytes
+		this.bytesDownloaded = 0;
+		
+		// Inicializando o monitor de eventos
+		Thread monitor = createAndStartMonitor(arqDestino.getName());
+		
+		// Realizando o download propriamente dito
+		while ((bytesRead = inputStream.read(buffer,0,BUFFER)) != -1) {
+			
+        	bytesDownloaded += bytesRead;
+        	outputStream.write(buffer, 0, bytesRead);
+        }
+		
+		// Limpando recursos
+		monitor.interrupt();
+		
+		inputStream .close();
+		outputStream.close();
+		
+	}
+	
+	/** Imprime uma mensagem no label.
+	 *  @param message - mensagem a ser impressa */
+	private void showMessageLabel(final String message) {
+		SwingUtilities.invokeLater(() -> this.labelInfos.setText(message));
+	}
+	
+	private URL findServer() {
+		
+		showMessageLabel("Buscando servidor...");
+		
+		String hostname = PropertiesManager.getString("net.home", null);
 		
 		try {
+			
 			String serverIP = NbtAddress.getByName(hostname).getHostAddress();
-			System.out.println(serverIP);
-			return String.format("http://%s/", serverIP);
+			
+			return new URL("http://" + serverIP);
 		}
 		catch (Exception exception) {
 			exception.printStackTrace();
@@ -42,62 +130,12 @@ public class DownloadManager {
 		
 	}
 	
-	private void downloadSheets() throws IOException {
-		String[] downloadList = getDownloadList();
-		
-		cleanSheetsDirectory();
-		
-		for (String remoteFile: downloadList) {
-			URL  inputFile  = getSourceFile(remoteFile);
-			File outputFile = getTargetFile(remoteFile);
-			downloadFile(inputFile, outputFile);
-		}
-		
-		AlertDialog.timedDisplay("Planilhas baixadas com sucesso!",5);
-	}
+
 	
-	private URL getSourceFile(String remoteSite) throws MalformedURLException {
-		return new URL(SHEETS_SERVER + remoteSite);
-	}
 	
-	private File getTargetFile(String localFile) {
-		return new File(SHEETS_FOLDER + localFile);
-	}
+
 	
-	private String[] getDownloadList() throws IOException {
-		URL index = new URL(SHEETS_SERVER + "index.txt");
-		String fileList = IOUtils.toString(index,"UTF-8");
-		return fileList.split("\n");
-	}
-	
-	private void cleanSheetsDirectory() throws IOException {
-		File sheetsDirectory = new File(SHEETS_FOLDER);
-		
-		for (File arquivo: sheetsDirectory.listFiles())
-			arquivo.delete();
-	} 
-	
-	private void downloadFile(URL remoteFile, File destination) throws IOException {
-		int bytesRead = 0;
-		final byte buffer[] = new byte[BUFFER];
-		
-		final BufferedInputStream  inputStream  = new BufferedInputStream(remoteFile.openStream());
-		final FileOutputStream     outputStream = new FileOutputStream(destination);
-		
-		bytesDownloaded = 0;
-		
-		Thread monitor = createAndStartMonitor(destination.getName());
-		
-		while ((bytesRead = inputStream.read(buffer,0,BUFFER)) != -1) {
-        	bytesDownloaded += bytesRead;
-        	outputStream.write(buffer,0,bytesRead);
-        }
-		
-		monitor.interrupt();
-		
-		inputStream .close();
-		outputStream.close();
-	}
+
 	
 	private Thread createAndStartMonitor(String destination) {
 		Thread thread = new DownloadMonitor(destination);
@@ -131,8 +169,7 @@ public class DownloadManager {
 		}
 		
 		private void showProgressMessage() {
-			System.out.print(message + getBytesDownloaded());
-			System.out.flush();
+			showMessageLabel(message + getBytesDownloaded());
 		}
 		
 		@Override

@@ -3,16 +3,15 @@ package compec.ufam.consulta.view;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.IOException;
+
 import javax.swing.event.*;
 import javax.swing.table.*;
 
 import com.phill.libs.ResourceManager;
-import com.phill.libs.StringUtils;
 import com.phill.libs.br.CPFTextField;
 import com.phill.libs.i18n.PropertyBundle;
 import com.phill.libs.sys.HostUtils;
@@ -23,7 +22,6 @@ import com.phill.libs.ui.AlertDialog;
 import com.phill.libs.ui.DocumentChangeListener;
 import com.phill.libs.ui.ESCDispose;
 import com.phill.libs.ui.GraphicsHelper;
-import com.phill.libs.ui.KeyReleasedListener;
 import com.phill.libs.ui.ShortcutAction;
 
 import compec.ufam.consulta.model.*;
@@ -50,7 +48,6 @@ public class TelaBuscaCandidato extends JFrame {
 	private final JLabel labelInfos, textQtd;
 	
 	//private final PrintStream stdout, stderr;
-	private JRadioButtonMenuItem itemRuntime;
 	
 	private Map<String, List<Candidato>> mapaCandidatos;
 	private ArrayList<Candidato> listaFiltrados;
@@ -165,12 +162,12 @@ public class TelaBuscaCandidato extends JFrame {
 		// Painel 'Candidatos'
 		JPanel panelCandidatos = new JPanel();
 		panelCandidatos.setBorder(instance.getTitledBorder("Candidatos"));
-		panelCandidatos.setBounds(10, 100, 1004, 450);
+		panelCandidatos.setBounds(10, 100, 1004, 468);
 		panelCandidatos.setLayout(null);
 		getContentPane().add(panelCandidatos);
 		
 		JScrollPane scrollResultado = new JScrollPane();
-		scrollResultado.setBounds(10, 25, 984, 395);
+		scrollResultado.setBounds(10, 25, 984, 413);
 		panelCandidatos.add(scrollResultado);
 		
 		this.modelo = new LockedTableModel(new String [] {"Concurso","Candidato","RG","CPF","Inscrição","Data de Insc.","Pago / Isento"});
@@ -207,30 +204,30 @@ public class TelaBuscaCandidato extends JFrame {
 		labelQtd.setHorizontalAlignment(JLabel.RIGHT);
 		labelQtd.setForeground(color);
 		labelQtd.setFont(fonte);
-		labelQtd.setBounds(10, 425, 90, 15);
+		labelQtd.setBounds(10, 443, 90, 15);
 		panelCandidatos.add(labelQtd);
 		
 		textQtd = new JLabel("0");
 		textQtd.setFont(fonte);
-		textQtd.setBounds(105, 425, 70, 15);
+		textQtd.setBounds(105, 443, 70, 15);
 		panelCandidatos.add(textQtd);
 		
 		// Fundo da janela
 		labelInfos = new JLabel();
 		labelInfos.setFont(fonte);
-		labelInfos.setBounds(10, 555, 925, 25);
+		labelInfos.setBounds(10, 575, 925, 25);
 		getContentPane().add(labelInfos);
 		
 		buttonRefresh = new JButton(refreshIcon);
 		buttonRefresh.addActionListener((event) -> threadLoadSheets());
 		buttonRefresh.setToolTipText(bundle.getString("hint-button-refresh"));
-		buttonRefresh.setBounds(943, 557, 30, 25);
+		buttonRefresh.setBounds(943, 575, 30, 25);
 		getContentPane().add(buttonRefresh);
 
 		buttonDownload = new JButton(downloadIcon);
 		buttonDownload.addActionListener((event) -> threadDownloadSheets());
 		buttonDownload.setToolTipText(bundle.getString("hint-button-download"));
-		buttonDownload.setBounds(983, 557, 30, 25);
+		buttonDownload.setBounds(983, 575, 30, 25);
 		getContentPane().add(buttonDownload);
 		
 		// Listeners dos campos de texto
@@ -554,7 +551,14 @@ public class TelaBuscaCandidato extends JFrame {
 	/** Faz o download de novas planilhas da rede. */
 	private void threadDownloadSheets() {
 		
-		Thread downloadThread = new Thread(() -> DownloadManager.updateSheets());
+		Thread downloadThread = new Thread(() -> {
+			try {
+				DownloadManager.run(labelInfos);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
 		
 		downloadThread.setName(bundle.getString("buscand-thread-download-thead"));
 		downloadThread.start();
