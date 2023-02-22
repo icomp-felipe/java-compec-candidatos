@@ -49,7 +49,7 @@ public class TelaSisCand extends JFrame {
 	private final PrintStream stderr;
 	
 	// Carregando bundle de idiomas
-	private final static PropertyBundle bundle = new PropertyBundle("i18n/tela-candidato-busca", null);
+	private final static PropertyBundle bundle = new PropertyBundle("i18n/tela-siscand", null);
 	
 	public static void main(String[] args) {
 		new TelaSisCand();
