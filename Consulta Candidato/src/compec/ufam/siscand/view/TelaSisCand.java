@@ -46,7 +46,7 @@ public class TelaSisCand extends JFrame {
 	private ArrayList<Candidato> listaFiltrados;
 	
 	// Redirecionamento da stream de erros
-	private final PrintStream stderr;
+	private PrintStream stderr;
 	
 	// Carregando bundle de idiomas
 	private final static PropertyBundle bundle = new PropertyBundle("i18n/tela-siscand", null);
@@ -255,7 +255,7 @@ public class TelaSisCand extends JFrame {
 		textCPF .getDocument().addDocumentListener(docListener);
 		textRG  .getDocument().addDocumentListener(docListener);
 		
-		this.stderr = new PrintStream(new StderrManager()); System.setErr(stderr);
+		//this.stderr = new PrintStream(new StderrManager()); System.setErr(stderr);
 		
 		createPopupMenu();
 		threadLoadSheets();
@@ -463,7 +463,7 @@ public class TelaSisCand extends JFrame {
 	@Override
 	public void dispose() {
 		
-		System.err.close(); stderr.close();
+		//System.err.close(); stderr.close();
 		
 		super.dispose();
 		
