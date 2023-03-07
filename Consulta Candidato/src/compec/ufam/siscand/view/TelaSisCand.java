@@ -36,7 +36,7 @@ public class TelaSisCand extends JFrame {
 	private final JCheckBox checkPagoIsento;
 	private final JButton buttonClear, buttonRefresh, buttonDownload;
 	private final JTable tableCandidatos;
-	private final DefaultTableModel modelo;
+	private final CandidatoTableModel modelo;
 	private final JLabel labelInfos, textQtd;
 	private final ImageIcon loadingIcon;
 	
@@ -161,7 +161,7 @@ public class TelaSisCand extends JFrame {
 		scrollResultado.setBounds(10, 25, 984, 413);
 		panelCandidatos.add(scrollResultado);
 		
-		this.modelo = new LockedTableModel(new String [] {"Concurso","Candidato","RG","CPF","Inscrição","Data de Insc.","Pago / Isento"});
+		this.modelo = new CandidatoTableModel(new String [] {"Concurso","Candidato","RG","CPF","Inscrição","Data de Insc.","Pago / Isento"});
 		
 		tableCandidatos = new JTable(modelo);
 		tableCandidatos.setRowHeight(20);
@@ -181,7 +181,6 @@ public class TelaSisCand extends JFrame {
 		columnModel.getColumn(3).setCellRenderer(centerRenderer);
 		columnModel.getColumn(4).setCellRenderer(centerRenderer);
 		columnModel.getColumn(5).setCellRenderer(centerRenderer);
-		columnModel.getColumn(6).setCellRenderer(centerRenderer);
 		
 		columnModel.getColumn(0).setPreferredWidth( 45);
 		columnModel.getColumn(1).setPreferredWidth(255);
@@ -357,7 +356,6 @@ public class TelaSisCand extends JFrame {
 			
 			// Atualizando a view
 			TableUtils.load(modelo, this.listaFiltrados, textQtd);
-			
 		}
 			
 	}
@@ -619,4 +617,25 @@ public class TelaSisCand extends JFrame {
 		loadThread.start();
 		
 	}
+	
+	private class CandidatoTableModel extends DefaultTableModel {
+
+		private static final long serialVersionUID = 972657735008671575L;
+
+		public CandidatoTableModel(String[] titles) {
+			super(null,titles);
+		}
+
+		@Override
+		public Class<?> getColumnClass(int columnIndex) {
+			return (columnIndex == 6) ? Boolean.class : super.getColumnClass(columnIndex);
+		}
+		
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			return false;
+		}
+		
+	}
+	
 }
