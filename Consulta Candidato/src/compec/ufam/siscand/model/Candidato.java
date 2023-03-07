@@ -9,12 +9,12 @@ import org.joda.time.format.*;
 
 /** Modelagem de um candidato.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0 - 22/FEV/2023 */
+ *  @version 2.0 - 07/MAR/2023 */
 public class Candidato implements JTableRowData {
 	
 	// Dados pessoais
 	private String nome, sexo, rg, rgUF, cpf;
-	private DateTime dataNascimento;
+	private LocalDateTime dataNascimento;
 	private boolean temDeficiencia;
 	private String logradouro, numero, bairro, cep, cidade, uf;
 	private String telefone, email;
@@ -62,7 +62,7 @@ public class Candidato implements JTableRowData {
 	/** Setter da data de nascimento do candidato.
 	 *  @param dataNascimento - data de nascimento do candidato */
 	public void setDataNascimento(final String dataNascimento) {
-		this.dataNascimento = DateTimeFormat.forPattern("ddMMyyyy").parseDateTime(dataNascimento);
+		this.dataNascimento = DateTimeFormat.forPattern("ddMMyyyy").parseLocalDateTime(dataNascimento);
 	}
 	
 	/** Setter do sinalizador de condição especial (candidato)
