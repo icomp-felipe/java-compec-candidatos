@@ -23,7 +23,7 @@ import compec.ufam.siscand.utils.*;
 
 /** Classe que implementa a interface de busca e visualização de candidatos.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0, 22/FEV/2023 */
+ *  @version 2.1, 16/MAR/2023 */
 public class TelaSisCand extends JFrame {
 
 	// Serial
@@ -391,7 +391,7 @@ public class TelaSisCand extends JFrame {
 				} catch (Exception exception) {
 					
 					exception.printStackTrace();
-					AlertDialog.error(bundle.getString("buscand-action-print-title"), bundle.getString("buscand-action-print-error"));
+					AlertDialog.error(this, bundle.getString("buscand-action-print-title"), bundle.getString("buscand-action-print-error"));
 						
 				}
 				finally {
@@ -429,7 +429,7 @@ public class TelaSisCand extends JFrame {
 				} catch (Exception exception) {
 					
 					exception.printStackTrace();
-					AlertDialog.error(bundle.getString("buscand-action-report-title"), bundle.getString("buscand-action-report-error"));
+					AlertDialog.error(this, bundle.getString("buscand-action-report-title"), bundle.getString("buscand-action-report-error"));
 						
 				}
 				finally {
@@ -567,7 +567,7 @@ public class TelaSisCand extends JFrame {
 			} catch (IOException exception) {
 				
 				exception.printStackTrace();
-				AlertDialog.error(bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-error"));
+				AlertDialog.error(this, bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-error"));
 				
 			}
 			finally {
@@ -601,7 +601,7 @@ public class TelaSisCand extends JFrame {
 			catch (Exception exception) {
 				
 				exception.printStackTrace();
-				AlertDialog.error(bundle.getString("buscand-thread-sheets-title"), bundle.getString("buscand-thread-sheets-error"));
+				AlertDialog.error(this, bundle.getString("buscand-thread-sheets-title"), bundle.getString("buscand-thread-sheets-error"));
 				
 			}
 			finally {

@@ -5,7 +5,7 @@ import com.phill.libs.*;
 import com.phill.libs.time.*;
 import com.phill.libs.ui.AlertDialog;
 
-public class StderrManager  extends OutputStream {
+public class StderrManager extends OutputStream {
 	
 	private FileOutputStream outputStream;
 	private File traceFile;
@@ -17,7 +17,7 @@ public class StderrManager  extends OutputStream {
 			outputStream = getStackTraceStream();
 		}
 		catch (IOException exception) {
-			AlertDialog.error("Falha ao criar o arquivo de log!");
+			AlertDialog.error(null, "Falha ao criar o arquivo de log!");
 		}
 		
 	}
