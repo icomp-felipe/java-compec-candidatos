@@ -34,10 +34,12 @@ public class CandidatoDAO {
 		// Listando planilhas xls dentro do diretório 'sheets'
 		File[] listaArquivos = PhillFileUtils.listFilesOrdered(sheets, PhillFileUtils.ASCENDING);
 		
-		// Povoando o mapa com os dados extraídos das planilhas
-		for (File planilha: listaArquivos)
-			if (planilha.getName().endsWith(".xls"))
-				loadFromSheet(planilha, mapaCandidatos);
+		if (listaArquivos != null)
+		
+			// Povoando o mapa com os dados extraídos das planilhas
+			for (File planilha: listaArquivos)
+				if (planilha.getName().endsWith(".xls"))
+					loadFromSheet(planilha, mapaCandidatos);
 				
 		
 		return mapaCandidatos;
