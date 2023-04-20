@@ -34,6 +34,11 @@ buscand-thread-download-error = Falha ao baixar planilhas!\n\
                                 Talvez o endereço do servidor remoto não tenha sido definido.\n\
                                 Consulte os arquivos de tracing para mais informações.
 
+! TelaBuscaCandidato::threadDownloadSheets
+buscand-thread-download-title  = SisCand v.2.0 - Baixando novas planilhas
+buscand-thread-download-dialog = O sistema irá baixar novas planilhas do servidor e sobrescrever as planilhas baixadas anteriormente!\n\
+                                 Deseja prosseguir?
+
 ! TelaBuscaCandidato::threadLoadSheets
 buscand-thread-sheets-thead = SisCand v.2.0 - Thread de carregamento de planilhas
 buscand-thread-sheets-title = Carregando planilhas

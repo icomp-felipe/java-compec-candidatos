@@ -8,12 +8,13 @@ import javax.swing.*;
 import jcifs.netbios.*;
 
 import org.apache.commons.io.*;
+import org.apache.commons.validator.routines.InetAddressValidator;
 
 import com.phill.libs.*;
 
 /** Classe responsável pelo download de planilhas do servidor descrito no arquivo de propriedades do sistema.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0, 22/FEV/2023 */
+ *  @version 2.0, 20/ABR/2023 */
 public class DownloadManager {
 
 	// Atributo gráfico
@@ -149,12 +150,12 @@ public class DownloadManager {
 	 *  @return URL do servidor
 	 *  @throws MalformedURLException quando a variável 'net.home' é vazia ou não está no formato correto
 	 *  @throws UnknownHostException quando o servidor não pode ser atingido */
-	private URL utilRetrieveServer() throws MalformedURLException, UnknownHostException {
+	private URL utilRetrieveServer() throws IOException, MalformedURLException, UnknownHostException {
 		
 		utilMessageLabel("Buscando servidor...");
 		
 		String hostname = PropertiesManager.getString("net.home", null);
-		String serverIP = NbtAddress.getByName(hostname).getHostAddress();
+		String serverIP = hostname.toLowerCase().equals("localhost") ? "127.0.0.1" : InetAddressValidator.getInstance().isValid(hostname) ? hostname : NbtAddress.getByName(hostname).getHostAddress();
 			
 		return new URL("http://" + serverIP);
 		

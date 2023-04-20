@@ -9,7 +9,7 @@ import org.joda.time.format.*;
 
 /** Modelagem de um candidato.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0 - 07/MAR/2023 */
+ *  @version 2.0 - 20/ABR/2023 */
 public class Candidato implements JTableRowData {
 	
 	// Dados pessoais
@@ -255,7 +255,7 @@ public class Candidato implements JTableRowData {
 	
 	/** @return Nome do curso escolhido pelo candidato. */
 	public String getCurso() {
-		return StringUtils.BR.normaliza(this.curso);
+		return this.curso;
 	}
 	
 	/** @return Cota em concurso. */

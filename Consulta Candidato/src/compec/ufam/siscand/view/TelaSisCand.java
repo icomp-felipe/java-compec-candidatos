@@ -23,7 +23,7 @@ import compec.ufam.siscand.utils.*;
 
 /** Classe que implementa a interface de busca e visualização de candidatos.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.1, 16/MAR/2023 */
+ *  @version 2.2, 20/ABR/2023 */
 public class TelaSisCand extends JFrame {
 
 	// Serial
@@ -34,7 +34,7 @@ public class TelaSisCand extends JFrame {
 	private final JFormattedTextField textCPF;
 	private final JComboBox<String> comboConcurso;
 	private final JCheckBox checkPagoIsento;
-	private final JButton buttonClear, buttonRefresh, buttonDownload;
+	private final JButton buttonClear, buttonRefresh, buttonDownload, buttonDownloadCancel;
 	private final JTable tableCandidatos;
 	private final CandidatoTableModel modelo;
 	private final JLabel labelInfos, textQtd;
@@ -44,6 +44,7 @@ public class TelaSisCand extends JFrame {
 	private boolean loading;
 	private Map<String, List<Candidato>> mapaCandidatos;
 	private ArrayList<Candidato> listaFiltrados;
+	private Thread downloadThread;
 	
 	// Redirecionamento da stream de erros
 	private PrintStream stderr;
@@ -66,6 +67,7 @@ public class TelaSisCand extends JFrame {
 		
 		// Recuperando ícones
 		final Icon clearIcon    = ResourceManager.getIcon("icon/brush.png"          , 20, 20);
+		final Icon cancelIcon   = ResourceManager.getIcon("icon/cancel.png"         , 20, 20);
 		final Icon downloadIcon = ResourceManager.getIcon("icon/globe_3.png"        , 20, 20);
 		final Icon saveIcon     = ResourceManager.getIcon("icon/save.png"           , 20, 20);
 		final Icon refreshIcon  = ResourceManager.getIcon("icon/playback_reload.png", 20, 20);
@@ -216,18 +218,22 @@ public class TelaSisCand extends JFrame {
 		labelEndereco.setBounds(10, 22, 75, 25);
 		panelServer.add(labelEndereco);
 		
-		JTextField textEndereco = new JTextField(PropertiesManager.getString("net.home", null));
+		JTextField textEndereco = new JTextField();
 		textEndereco.setFont(fonte);
 		textEndereco.setToolTipText(bundle.getString("hint-text-endereco"));
 		textEndereco.setHorizontalAlignment(JLabel.CENTER);
 		textEndereco.setBounds(90, 25, 115, 20);
 		panelServer.add(textEndereco);
 		
+		try { textEndereco.setText(PropertiesManager.getString("net.home", null)); } catch (Exception exception) {};
+		
 		JButton buttonEnderecoSave = new JButton(saveIcon);
-		buttonEnderecoSave.addActionListener((event) -> PropertiesManager.setString("net.home", textEndereco.getText().trim(), null));
+		buttonEnderecoSave.addActionListener((event) -> { try { PropertiesManager.setString("net.home", textEndereco.getText().trim(), null); } catch (Exception exception) { exception.printStackTrace(); } });
 		buttonEnderecoSave.setToolTipText(bundle.getString("hint-button-save"));
 		buttonEnderecoSave.setBounds(215, 20, 30, 25);
 		panelServer.add(buttonEnderecoSave);
+		
+		textEndereco.addKeyListener((KeyReleasedListener) event -> { if (event.getKeyCode() == KeyEvent.VK_ENTER) buttonEnderecoSave.doClick(); });
 		
 		// Fundo da janela
 		labelInfos = new JLabel();
@@ -247,6 +253,13 @@ public class TelaSisCand extends JFrame {
 		buttonDownload.setBounds(983, 635, 30, 25);
 		getContentPane().add(buttonDownload);
 		
+		buttonDownloadCancel = new JButton(cancelIcon);
+		buttonDownloadCancel.setVisible(false);
+		buttonDownloadCancel.addActionListener((event) -> downloadThread.interrupt());
+		buttonDownloadCancel.setToolTipText(bundle.getString("hint-button-download"));
+		buttonDownloadCancel.setBounds(983, 635, 30, 25);
+		getContentPane().add(buttonDownloadCancel);
+		
 		// Listeners dos campos de texto
 		DocumentListener docListener = (DocumentChangeListener) (event) -> actionBusca();
 		
@@ -254,7 +267,7 @@ public class TelaSisCand extends JFrame {
 		textCPF .getDocument().addDocumentListener(docListener);
 		textRG  .getDocument().addDocumentListener(docListener);
 		
-		//this.stderr = new PrintStream(new StderrManager()); System.setErr(stderr);
+		this.stderr = new PrintStream(new StderrManager()); System.setErr(stderr);
 		
 		createPopupMenu();
 		threadLoadSheets();
@@ -461,7 +474,7 @@ public class TelaSisCand extends JFrame {
 	@Override
 	public void dispose() {
 		
-		//System.err.close(); stderr.close();
+		System.err.close(); stderr.close();
 		
 		super.dispose();
 		
@@ -558,28 +571,42 @@ public class TelaSisCand extends JFrame {
 	/** Faz o download de novas planilhas da rede. */
 	private void threadDownloadSheets() {
 		
-		Thread downloadThread = new Thread(() -> {
+		if (AlertDialog.dialog(this, bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-dialog")) == AlertDialog.OK_OPTION) {
 			
-			try {
-				
-				DownloadManager.run(labelInfos);
-				
-			} catch (IOException exception) {
-				
-				exception.printStackTrace();
-				AlertDialog.error(this, bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-error"));
-				
-			}
-			finally {
-				
-				utilMessageLabel(null, false);
-				
-			}
+			buttonDownload.setVisible(false);
+			buttonDownloadCancel.setVisible(true);
 			
-		});
-		
-		downloadThread.setName(bundle.getString("buscand-thread-download-title"));
-		downloadThread.start();
+			this.downloadThread = new Thread(() -> {
+				
+				try {
+					
+					utilMessageLabel("Baixando planilhas do servidor...", true);
+					DownloadManager.run(labelInfos);
+					
+				} catch (IOException exception) {
+					
+					exception.printStackTrace();
+					AlertDialog.error(this, bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-error"));
+					
+				}
+				finally {
+					
+					utilMessageLabel(null, false);
+					SwingUtilities.invokeLater(() -> { buttonDownload.setVisible(true); buttonDownloadCancel.setVisible(false);} );
+					
+				}
+				
+			}) {
+				@Override
+				public void interrupt() {
+					System.out.println("to-do");
+				}
+			};
+			
+			downloadThread.setName(bundle.getString("buscand-thread-download-title"));
+			downloadThread.start();
+			
+		}
 		
 	}
 	
