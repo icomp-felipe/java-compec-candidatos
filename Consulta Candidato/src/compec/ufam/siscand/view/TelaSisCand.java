@@ -255,7 +255,7 @@ public class TelaSisCand extends JFrame {
 		
 		buttonDownloadCancel = new JButton(cancelIcon);
 		buttonDownloadCancel.setVisible(false);
-		buttonDownloadCancel.addActionListener((event) -> downloadThread.interrupt());
+		buttonDownloadCancel.addActionListener((event) -> actionDownloadCancel());
 		buttonDownloadCancel.setToolTipText(bundle.getString("hint-button-download"));
 		buttonDownloadCancel.setBounds(983, 635, 30, 25);
 		getContentPane().add(buttonDownloadCancel);
@@ -371,6 +371,14 @@ public class TelaSisCand extends JFrame {
 			TableUtils.load(modelo, this.listaFiltrados, textQtd);
 		}
 			
+	}
+	
+	/** Cancela a operação de download de planilhas. */
+	private void actionDownloadCancel() {
+		
+		if (AlertDialog.dialog(this, bundle.getString("buscand-thread-dwcancel-title"), bundle.getString("buscand-thread-dwcancel-dialog")) == AlertDialog.OK_OPTION)
+			downloadThread.interrupt();
+		
 	}
 	
 	/** Abre um novo email com o endereço do candidato selecionado na tabela. */
@@ -599,7 +607,7 @@ public class TelaSisCand extends JFrame {
 			}) {
 				@Override
 				public void interrupt() {
-					System.out.println("to-do");
+					DownloadManager.interrupt();
 				}
 			};
 			

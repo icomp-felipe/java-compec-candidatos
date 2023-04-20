@@ -14,6 +14,10 @@ hint-button-refresh  = Recarrega as planilhas
 hint-button-download = Baixa novas planilhas do servidor
 
 ########## Métodos
+! TelaBuscaCandidato::actionDownloadCancel
+buscand-thread-dwcancel-title  = SisCand v.2.0 - Cancelar Download
+buscand-thread-dwcancel-dialog = Deseja cancelar o download das planilhas?
+
 ! TelaBuscaCandidato::actionPrint
 buscand-action-print-thread  = SisCand v.2.0 - Thread de impressão de candidato
 buscand-action-print-loadMsg = Imprimindo dados do candidato selecionado...

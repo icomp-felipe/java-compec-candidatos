@@ -25,6 +25,9 @@ public class DownloadManager {
 	private final int bufferSize, updateTime;
 	private final URL  serverURL;
 	private final File sheetsDir;
+	private boolean interrupted;
+	
+	private static DownloadManager dw;
 	
 	/** Construtor privado inicializando atributos.
 	 *  @param labelInfos - label para mostrar as atualizações 
@@ -44,7 +47,15 @@ public class DownloadManager {
 	 *  @param labelInfos - label para mostrar as atualizações
 	 *  @throws IOException quando algum erro de E/S ocorre */
 	public static void run(final JLabel labelInfos) throws IOException {
-		new DownloadManager(labelInfos).actionDownloadSheets();
+		
+		dw = new DownloadManager(labelInfos);
+		dw.actionDownloadSheets();
+		
+	}
+	
+	/** Interrompe a operação de download. */
+	public static void interrupt() {
+		dw.interrupted = true;
 	}
 	
 	/****************************** Bloco de Threads **************************************/
@@ -53,25 +64,29 @@ public class DownloadManager {
 	 *  @throws IOException quando os arquivos não podem ser baixados ou escritos no disco. */
 	private void actionDownloadSheets() throws IOException {
 		
-		// Recuperando lista de download
-		String[] downloadList = utilRetrieveDownloadList();
-		
-		// Apaga todos os arquivos contidos em 'res/sheets'
-		for (File arquivo: sheetsDir.listFiles())
-			arquivo.delete();
-		
-		// Baixa as planilhas do servidor
-		for (String remoteFile: downloadList) {
+		if (!interrupted) {
 			
-			URL  inputFile  = new URL (serverURL, remoteFile);
-			File outputFile = new File(sheetsDir, remoteFile);
+			// Recuperando lista de download
+			String[] downloadList = utilRetrieveDownloadList();
 			
-			actionDownloadFile(inputFile, outputFile);
+			// Apaga todos os arquivos contidos em 'res/sheets'
+			for (File arquivo: sheetsDir.listFiles())
+				arquivo.delete();
+			
+			// Baixa as planilhas do servidor
+			for (String remoteFile: downloadList) {
+				
+				URL  inputFile  = new URL (serverURL, remoteFile);
+				File outputFile = new File(sheetsDir, remoteFile);
+				
+				actionDownloadFile(inputFile, outputFile);
+				
+			}
+			
+			// Informando a view
+			utilMessageLabel("Planilhas baixadas com sucesso!");
 			
 		}
-		
-		// Informando a view
-		utilMessageLabel("Planilhas baixadas com sucesso!");
 		
 	}
 	
@@ -100,8 +115,11 @@ public class DownloadManager {
 		// Realizando o download propriamente dito
 		while ((bytesRead = inputStream.read(buffer, 0, bufferSize)) != -1) {
 			
+			if (interrupted) break;
+			
         	bytesDownloaded += bytesRead;
         	outputStream.write(buffer, 0, bytesRead);
+			
         }
 		
 		// Limpando recursos
