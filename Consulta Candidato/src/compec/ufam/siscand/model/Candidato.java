@@ -9,7 +9,7 @@ import org.joda.time.format.*;
 
 /** Modelagem de um candidato.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0 - 20/ABR/2023 */
+ *  @version 2.0 - 23/ABR/2023 */
 public class Candidato implements JTableRowData {
 	
 	// Dados pessoais
@@ -230,7 +230,7 @@ public class Candidato implements JTableRowData {
 
 	/** @return Endereço de e-mail do candidato. */
 	public String getEmail() {
-		return this.email;
+		return this.email == null ? null : this.email.toLowerCase();
 	}
 
 	/** @return Nome do concurso. */
