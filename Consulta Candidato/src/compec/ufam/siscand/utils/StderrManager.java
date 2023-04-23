@@ -69,9 +69,11 @@ public class StderrManager extends OutputStream {
 		
 		String curdate  = PhillsDateUtils.now("dd.MM.yyyy_HH.mm.ss");
 		String filename = String.format("stackTrace_%s.txt",curdate);
-		String stackDir = ResourceManager.getResource("tracing/");
+		File stackDir = ResourceManager.getResourceAsFile("tracing");
 		
-		return new File(stackDir+filename);
+		stackDir.mkdirs();
+		
+		return new File(stackDir, filename);
 	}
 	
 	/** Cria uma stream com o arquivo de debug */
