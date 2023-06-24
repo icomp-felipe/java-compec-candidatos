@@ -2,6 +2,7 @@ package compec.ufam.siscand.utils;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.*;
 
 import javax.swing.*;
 
@@ -14,7 +15,7 @@ import com.phill.libs.*;
 
 /** Classe responsável pelo download de planilhas do servidor descrito no arquivo de propriedades do sistema.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0, 20/ABR/2023 */
+ *  @version 2.5, 23/MAI/2023 */
 public class DownloadManager {
 
 	// Atributo gráfico
@@ -23,7 +24,7 @@ public class DownloadManager {
 	// Atributos de controle de download
 	private long bytesDownloaded;
 	private final int bufferSize, updateTime;
-	private final URL  serverURL;
+	private final String serverIP;
 	private final File sheetsDir;
 	private boolean interrupted;
 	
@@ -38,15 +39,16 @@ public class DownloadManager {
 		
 		this.bufferSize = 65536;
 		this.updateTime = 250;
-		this.serverURL  = utilRetrieveServer();
-		this.sheetsDir  = ResourceManager.getResourceAsFile("sheets");
+		this.serverIP  = getServerIP();
+		this.sheetsDir  = ResourceManager.getResourceAsFile("sheets"); this.sheetsDir.mkdirs();
 		
 	}
 	
 	/** Baixa as planilhas de dados do servidor descrito no arquivo de propriedades do sistema.
 	 *  @param labelInfos - label para mostrar as atualizações
-	 *  @throws IOException quando algum erro de E/S ocorre */
-	public static void run(final JLabel labelInfos) throws IOException {
+	 *  @throws IOException quando algum erro de E/S ocorre 
+	 *  @throws URISyntaxException quando o endereço do arquivo remoto não pode ser montado corretamente */
+	public static void run(final JLabel labelInfos) throws IOException, URISyntaxException {
 		
 		dw = new DownloadManager(labelInfos);
 		dw.actionDownloadSheets();
@@ -61,8 +63,9 @@ public class DownloadManager {
 	/****************************** Bloco de Threads **************************************/
 	
 	/** Baixa as planilhas do servidor descrito no arquivo de propriedades.
-	 *  @throws IOException quando os arquivos não podem ser baixados ou escritos no disco. */
-	private void actionDownloadSheets() throws IOException {
+	 *  @throws IOException quando os arquivos não podem ser baixados ou escritos no disco. 
+	 *  @throws URISyntaxException quando o endereço do arquivo remoto não pode ser montado corretamente */
+	private void actionDownloadSheets() throws IOException, URISyntaxException {
 		
 		if (!interrupted) {
 			
@@ -76,7 +79,7 @@ public class DownloadManager {
 			// Baixa as planilhas do servidor
 			for (String remoteFile: downloadList) {
 				
-				URL  inputFile  = new URL (serverURL, remoteFile);
+				URL  inputFile  = new URI("http", this.serverIP, "/" + remoteFile, null).toURL();
 				File outputFile = new File(sheetsDir, remoteFile);
 				
 				actionDownloadFile(inputFile, outputFile);
@@ -155,27 +158,28 @@ public class DownloadManager {
 	
 	/** Recupera a lista de downloads [index.txt] de planilhas do servidor.
 	 *  @return Array com os nomes dos arquivos a serem baixados.
-	 *  @throws IOException quando o arquivo 'index.txt' não pôde ser baixado do servidor. */
-	private String[] utilRetrieveDownloadList() throws IOException {
+	 *  @throws IOException quando o arquivo 'index.txt' não pôde ser baixado do servidor. 
+	 *  @throws URISyntaxException quando o endereço do arquivo remoto não pode ser montado corretamente */
+	private String[] utilRetrieveDownloadList() throws IOException, URISyntaxException {
 		
-		URL index = new URL(serverURL, "index.txt");
-		String fileList = IOUtils.toString(index, "UTF-8");
+		URL index = new URI("http", this.serverIP, "/index.txt", null).toURL();
+		String fileList = IOUtils.toString(index, StandardCharsets.UTF_8);
 		
 		return fileList.split("\n");
 	}
 	
 	/** Recupera o endereço IP do servidor através no nome netbios contido na variável 'net.home' do arquivo de propriedades.
-	 *  @return URL do servidor
+	 *  @return endereço IPv4 do servidor
 	 *  @throws MalformedURLException quando a variável 'net.home' é vazia ou não está no formato correto
 	 *  @throws UnknownHostException quando o servidor não pode ser atingido */
-	private URL utilRetrieveServer() throws IOException, MalformedURLException, UnknownHostException {
+	private String getServerIP() throws IOException, MalformedURLException, UnknownHostException {
 		
 		utilMessageLabel("Buscando servidor...");
 		
-		String hostname = PropertiesManager.getString("net.home", null);
+		String hostname = PropertiesManager.getString("net.home", null).trim();
 		String serverIP = hostname.toLowerCase().equals("localhost") ? "127.0.0.1" : InetAddressValidator.getInstance().isValid(hostname) ? hostname : NbtAddress.getByName(hostname).getHostAddress();
 			
-		return new URL("http://" + serverIP);
+		return serverIP;
 		
 	}
 	

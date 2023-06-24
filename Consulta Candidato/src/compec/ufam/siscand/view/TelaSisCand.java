@@ -1,6 +1,7 @@
 package compec.ufam.siscand.view;
 
 import java.io.*;
+import java.net.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -591,7 +592,7 @@ public class TelaSisCand extends JFrame {
 					utilMessageLabel("Baixando planilhas do servidor...", true);
 					DownloadManager.run(labelInfos);
 					
-				} catch (IOException exception) {
+				} catch (IOException | URISyntaxException exception) {
 					
 					exception.printStackTrace();
 					AlertDialog.error(this, bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-error"));
