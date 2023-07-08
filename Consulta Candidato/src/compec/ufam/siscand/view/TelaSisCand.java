@@ -83,7 +83,7 @@ public class TelaSisCand extends JFrame {
 		// Painel 'Busca'
 		JPanel panelBusca = new JPanel();
 		panelBusca.setBorder(GraphicsHelper.getInstance().getTitledBorder("Busca"));
-		panelBusca.setBounds(10, 10, 1004, 90);
+		panelBusca.setBounds(10, 10, 1005, 90);
 		panelBusca.setLayout(null);
 		getContentPane().add(panelBusca);
 		
@@ -150,13 +150,13 @@ public class TelaSisCand extends JFrame {
 		buttonClear = new JButton(clearIcon);
 		buttonClear.setToolTipText(bundle.getString("hint-button-clear"));
 		buttonClear.addActionListener((event) -> utilClear());
-		buttonClear.setBounds(963, 55, 30, 25);
+		buttonClear.setBounds(965, 55, 30, 25);
 		panelBusca.add(buttonClear);
 		
 		// Painel 'Candidatos'
 		JPanel panelCandidatos = new JPanel();
 		panelCandidatos.setBorder(instance.getTitledBorder("Candidatos"));
-		panelCandidatos.setBounds(10, 100, 1004, 468);
+		panelCandidatos.setBounds(10, 100, 1005, 468);
 		panelCandidatos.setLayout(null);
 		getContentPane().add(panelCandidatos);
 		
@@ -208,7 +208,7 @@ public class TelaSisCand extends JFrame {
 		// Painel 'Servidor Remoto'
 		JPanel panelServer = new JPanel();
 		panelServer.setBorder(instance.getTitledBorder("Servidor Remoto"));
-		panelServer.setBounds(10, 568, 1004, 55);
+		panelServer.setBounds(10, 568, 1005, 55);
 		getContentPane().add(panelServer);
 		panelServer.setLayout(null);
 		
@@ -245,13 +245,13 @@ public class TelaSisCand extends JFrame {
 		buttonRefresh = new JButton(refreshIcon);
 		buttonRefresh.addActionListener((event) -> threadLoadSheets());
 		buttonRefresh.setToolTipText(bundle.getString("hint-button-refresh"));
-		buttonRefresh.setBounds(943, 635, 30, 25);
+		buttonRefresh.setBounds(945, 635, 30, 25);
 		getContentPane().add(buttonRefresh);
 
 		buttonDownload = new JButton(downloadIcon);
 		buttonDownload.addActionListener((event) -> threadDownloadSheets());
 		buttonDownload.setToolTipText(bundle.getString("hint-button-download"));
-		buttonDownload.setBounds(983, 635, 30, 25);
+		buttonDownload.setBounds(985, 635, 30, 25);
 		getContentPane().add(buttonDownload);
 		
 		buttonDownloadCancel = new JButton(cancelIcon);
@@ -275,7 +275,7 @@ public class TelaSisCand extends JFrame {
 		
 		comboConcurso.addActionListener((event) -> actionBusca());
 		
-		setSize(1024,700);
+		setSize(1040, 710);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setResizable(false);
