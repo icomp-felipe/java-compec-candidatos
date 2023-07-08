@@ -2,6 +2,8 @@ package compec.ufam.siscand.view;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -10,10 +12,12 @@ import javax.swing.*;
 import java.awt.event.*;
 
 import javax.swing.event.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.*;
 
 import com.phill.libs.*;
 import com.phill.libs.br.*;
+import com.phill.libs.files.PhillFileUtils;
 import com.phill.libs.ui.*;
 import com.phill.libs.sys.*;
 import com.phill.libs.i18n.*;
@@ -35,17 +39,19 @@ public class TelaSisCand extends JFrame {
 	private final JFormattedTextField textCPF;
 	private final JComboBox<String> comboConcurso;
 	private final JCheckBox checkPagoIsento;
-	private final JButton buttonClear, buttonRefresh, buttonDownload, buttonDownloadCancel;
+	private final JButton buttonClear, buttonRefresh, bottonImport;
 	private final JTable tableCandidatos;
 	private final CandidatoTableModel modelo;
 	private final JLabel labelInfos, textQtd;
 	private final ImageIcon loadingIcon;
 	
+	// Atributos estáticos
+	private File sheetsDir = ResourceManager.getResourceAsFile("sheets");
+	
 	// Atributos dinâmicos
 	private boolean loading;
 	private Map<String, List<Candidato>> mapaCandidatos;
 	private ArrayList<Candidato> listaFiltrados;
-	private Thread downloadThread;
 	
 	// Redirecionamento da stream de erros
 	private PrintStream stderr;
@@ -67,11 +73,10 @@ public class TelaSisCand extends JFrame {
 		getContentPane().setLayout(null);
 		
 		// Recuperando ícones
-		final Icon clearIcon    = ResourceManager.getIcon("icon/brush.png"          , 20, 20);
-		final Icon cancelIcon   = ResourceManager.getIcon("icon/cancel.png"         , 20, 20);
-		final Icon downloadIcon = ResourceManager.getIcon("icon/globe_3.png"        , 20, 20);
-		final Icon saveIcon     = ResourceManager.getIcon("icon/save.png"           , 20, 20);
-		final Icon refreshIcon  = ResourceManager.getIcon("icon/playback_reload.png", 20, 20);
+		final Icon clearIcon   = ResourceManager.getIcon("icon/brush.png"          , 20, 20);
+		final Icon importIcon  = ResourceManager.getIcon("icon/round_plus.png"     , 20, 20);
+		final Icon saveIcon    = ResourceManager.getIcon("icon/save.png"           , 20, 20);
+		final Icon refreshIcon = ResourceManager.getIcon("icon/playback_reload.png", 20, 20);
 		
 		this.loadingIcon = new ImageIcon(ResourceManager.getResource("icon/loading.gif"));
 		
@@ -248,18 +253,11 @@ public class TelaSisCand extends JFrame {
 		buttonRefresh.setBounds(945, 635, 30, 25);
 		getContentPane().add(buttonRefresh);
 
-		buttonDownload = new JButton(downloadIcon);
-		buttonDownload.addActionListener((event) -> threadDownloadSheets());
-		buttonDownload.setToolTipText(bundle.getString("hint-button-download"));
-		buttonDownload.setBounds(985, 635, 30, 25);
-		getContentPane().add(buttonDownload);
-		
-		buttonDownloadCancel = new JButton(cancelIcon);
-		buttonDownloadCancel.setVisible(false);
-		buttonDownloadCancel.addActionListener((event) -> actionDownloadCancel());
-		buttonDownloadCancel.setToolTipText(bundle.getString("hint-button-download"));
-		buttonDownloadCancel.setBounds(983, 635, 30, 25);
-		getContentPane().add(buttonDownloadCancel);
+		bottonImport = new JButton(importIcon);
+		bottonImport.addActionListener((event) -> actionImport());
+		bottonImport.setToolTipText(bundle.getString("hint-button-import"));
+		bottonImport.setBounds(985, 635, 30, 25);
+		getContentPane().add(bottonImport);
 		
 		// Listeners dos campos de texto
 		DocumentListener docListener = (DocumentChangeListener) (event) -> actionBusca();
@@ -374,14 +372,6 @@ public class TelaSisCand extends JFrame {
 			
 	}
 	
-	/** Cancela a operação de download de planilhas. */
-	private void actionDownloadCancel() {
-		
-		if (AlertDialog.dialog(this, bundle.getString("buscand-thread-dwcancel-title"), bundle.getString("buscand-thread-dwcancel-dialog")) == AlertDialog.OK_OPTION)
-			downloadThread.interrupt();
-		
-	}
-	
 	/** Abre um novo email com o endereço do candidato selecionado na tabela. */
 	private void actionEmail() {
 		
@@ -390,6 +380,51 @@ public class TelaSisCand extends JFrame {
 		
 		if (candidato != null)
 			HostUtils.sendEmail(candidato.getEmail());
+		
+	}
+	
+	/** Importa as planilhas do PSConcursos pro sistema. */
+	private void actionImport() {
+
+		// Preparando o diálogo de seleção de planilhas
+		JFileChooser chooser = new JFileChooser();
+		
+		chooser.setDialogTitle            (bundle.getString("buscand-import-dialog"));
+		chooser.setCurrentDirectory       (PhillFileUtils.HOME_DIRECTORY);
+		chooser.setMultiSelectionEnabled  (true);
+		chooser.setAcceptAllFileFilterUsed(false);
+		chooser.addChoosableFileFilter    (new FileNameExtensionFilter("Planilha do Excel 2003 (.xls)", "xls"));
+		
+		// Faz algo apenas se o usuário selecionar algum arquivo
+		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			
+			// Exibe o diálogo para limpar o diretório de planilhas
+			if (AlertDialog.dialog(this, getTitle(), bundle.getString("buscand-import-clear")) == AlertDialog.OK_OPTION)
+				for (File file: sheetsDir.listFiles())
+					file.delete();
+			
+			// Copiando arquivos
+			for (File sheet: chooser.getSelectedFiles()) {
+				
+				File targetFile = new File(sheetsDir, sheet.getName());
+				
+				try {
+					
+					Files.copy(sheet.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					
+				} catch (IOException exception) {
+					
+					exception.printStackTrace();
+					AlertDialog.error(this, getTitle(), bundle.getString("buscand-import-error"));
+					break;
+					
+				}
+				
+			}
+
+			utilMessageLabel(bundle.getString("buscand-import-success"), false);
+			
+		}
 		
 	}
 	
@@ -527,7 +562,7 @@ public class TelaSisCand extends JFrame {
 			tableCandidatos.setEnabled(enable);
 			
 			buttonRefresh .setEnabled(enable);
-			buttonDownload.setEnabled(enable);
+			bottonImport.setEnabled(enable);
 			
 		});
 		
@@ -576,48 +611,6 @@ public class TelaSisCand extends JFrame {
 	}
 	
 	/****************************** Bloco de Threads **************************************/
-	
-	/** Faz o download de novas planilhas da rede. */
-	private void threadDownloadSheets() {
-		
-		if (AlertDialog.dialog(this, bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-dialog")) == AlertDialog.OK_OPTION) {
-			
-			buttonDownload.setVisible(false);
-			buttonDownloadCancel.setVisible(true);
-			
-			this.downloadThread = new Thread(() -> {
-				
-				try {
-					
-					utilMessageLabel("Baixando planilhas do servidor...", true);
-					DownloadManager.run(labelInfos);
-					
-				} catch (IOException | URISyntaxException exception) {
-					
-					exception.printStackTrace();
-					AlertDialog.error(this, bundle.getString("buscand-thread-download-title"), bundle.getString("buscand-thread-download-error"));
-					
-				}
-				finally {
-					
-					utilMessageLabel(null, false);
-					SwingUtilities.invokeLater(() -> { buttonDownload.setVisible(true); buttonDownloadCancel.setVisible(false);} );
-					
-				}
-				
-			}) {
-				@Override
-				public void interrupt() {
-					DownloadManager.interrupt();
-				}
-			};
-			
-			downloadThread.setName(bundle.getString("buscand-thread-download-title"));
-			downloadThread.start();
-			
-		}
-		
-	}
 	
 	/** Cria um mapa com os dados provenientes das planilhas de listagens de candidatos. */
 	private void threadLoadSheets() {
