@@ -1,12 +1,10 @@
 package compec.ufam.siscand.view;
 
 import java.io.*;
-import java.net.*;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.nio.file.*;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -28,7 +26,7 @@ import compec.ufam.siscand.utils.*;
 
 /** Classe que implementa a interface de busca e visualização de candidatos.
  *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.2, 20/ABR/2023 */
+ *  @version 2.5, 08/JUL/2023 */
 public class TelaSisCand extends JFrame {
 
 	// Serial
@@ -75,7 +73,6 @@ public class TelaSisCand extends JFrame {
 		// Recuperando ícones
 		final Icon clearIcon   = ResourceManager.getIcon("icon/brush.png"          , 20, 20);
 		final Icon importIcon  = ResourceManager.getIcon("icon/round_plus.png"     , 20, 20);
-		final Icon saveIcon    = ResourceManager.getIcon("icon/save.png"           , 20, 20);
 		final Icon refreshIcon = ResourceManager.getIcon("icon/playback_reload.png", 20, 20);
 		
 		this.loadingIcon = new ImageIcon(ResourceManager.getResource("icon/loading.gif"));
@@ -161,12 +158,12 @@ public class TelaSisCand extends JFrame {
 		// Painel 'Candidatos'
 		JPanel panelCandidatos = new JPanel();
 		panelCandidatos.setBorder(instance.getTitledBorder("Candidatos"));
-		panelCandidatos.setBounds(10, 100, 1005, 468);
+		panelCandidatos.setBounds(10, 100, 1005, 525);
 		panelCandidatos.setLayout(null);
 		getContentPane().add(panelCandidatos);
 		
 		JScrollPane scrollResultado = new JScrollPane();
-		scrollResultado.setBounds(10, 25, 984, 413);
+		scrollResultado.setBounds(10, 25, 985, 465);
 		panelCandidatos.add(scrollResultado);
 		
 		this.modelo = new CandidatoTableModel(new String [] {"Concurso","Candidato","RG","CPF","Inscrição","Data de Insc.","Pago / Isento"});
@@ -202,44 +199,15 @@ public class TelaSisCand extends JFrame {
 		labelQtd.setHorizontalAlignment(JLabel.RIGHT);
 		labelQtd.setForeground(color);
 		labelQtd.setFont(fonte);
-		labelQtd.setBounds(10, 443, 90, 15);
+		labelQtd.setBounds(10, 498, 90, 15);
 		panelCandidatos.add(labelQtd);
 		
 		textQtd = new JLabel("0");
 		textQtd.setFont(fonte);
-		textQtd.setBounds(105, 443, 70, 15);
+		textQtd.setBounds(105, 498, 70, 15);
 		panelCandidatos.add(textQtd);
 		
-		// Painel 'Servidor Remoto'
-		JPanel panelServer = new JPanel();
-		panelServer.setBorder(instance.getTitledBorder("Servidor Remoto"));
-		panelServer.setBounds(10, 568, 1005, 55);
-		getContentPane().add(panelServer);
-		panelServer.setLayout(null);
-		
-		JLabel labelEndereco = new JLabel("Endereço:");
-		labelEndereco.setHorizontalAlignment(JLabel.RIGHT);
-		labelEndereco.setForeground(color);
-		labelEndereco.setFont(fonte);
-		labelEndereco.setBounds(10, 22, 75, 25);
-		panelServer.add(labelEndereco);
-		
-		JTextField textEndereco = new JTextField();
-		textEndereco.setFont(fonte);
-		textEndereco.setToolTipText(bundle.getString("hint-text-endereco"));
-		textEndereco.setHorizontalAlignment(JLabel.CENTER);
-		textEndereco.setBounds(90, 25, 115, 20);
-		panelServer.add(textEndereco);
-		
-		try { textEndereco.setText(PropertiesManager.getString("net.home", null)); } catch (Exception exception) {};
-		
-		JButton buttonEnderecoSave = new JButton(saveIcon);
-		buttonEnderecoSave.addActionListener((event) -> { try { PropertiesManager.setString("net.home", textEndereco.getText().trim(), null); } catch (Exception exception) { exception.printStackTrace(); } });
-		buttonEnderecoSave.setToolTipText(bundle.getString("hint-button-save"));
-		buttonEnderecoSave.setBounds(215, 20, 30, 25);
-		panelServer.add(buttonEnderecoSave);
-		
-		textEndereco.addKeyListener((KeyReleasedListener) event -> { if (event.getKeyCode() == KeyEvent.VK_ENTER) buttonEnderecoSave.doClick(); });
+		try {} catch (Exception exception) {};
 		
 		// Fundo da janela
 		labelInfos = new JLabel();
@@ -421,9 +389,9 @@ public class TelaSisCand extends JFrame {
 				}
 				
 			}
-
-			utilMessageLabel(bundle.getString("buscand-import-success"), false);
 			
+			threadLoadSheets();
+
 		}
 		
 	}
@@ -620,6 +588,7 @@ public class TelaSisCand extends JFrame {
 			try {
 	
 				utilLockFields(true);
+				utilMessageLabel("Carregando planilhas...", true);
 				
 				mapaCandidatos = CandidatoDAO.load();
 				
@@ -636,6 +605,7 @@ public class TelaSisCand extends JFrame {
 			finally {
 				
 				utilLockFields(false);
+				utilMessageLabel(null, false);
 				utilClear();
 				
 			}
