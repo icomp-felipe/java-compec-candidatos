@@ -62,7 +62,7 @@ public class TelaSisCand extends JFrame {
 	}
 	
 	public TelaSisCand() {
-		super("SisCand v.2.0 - Lista de Candidatos");
+		super("SisCand v.2.5 - Lista de Candidatos");
 		
 		// Inicializando atributos gráficos
 		GraphicsHelper instance = GraphicsHelper.getInstance();
