@@ -6,45 +6,33 @@ hint-text-rg   = Busca por RG
 hint-combo-concurso    = Filtrar por concurso
 hint-check-pago-isento = Filtrar apenas inscrições pagas ou com isenção confirmada
 
-hint-text-endereco = Endereço do servidor remoto para download de novas planilhas (IP ou NetBIOS)
-hint-button-save   = Salva o endereço do servidor no arquivo de propriedades do sistema
-
-hint-button-clear    = Limpar campos de texto
-hint-button-refresh  = Recarrega as planilhas
-hint-button-download = Baixa novas planilhas do servidor
+hint-button-clear   = Limpar campos de texto
+hint-button-refresh = Recarrega as planilhas
+hint-button-import  = Importa as planilhas do PSConcursos pro sistema
 
 ########## Métodos
-! TelaBuscaCandidato::actionDownloadCancel
-buscand-thread-dwcancel-title  = SisCand v.2.0 - Cancelar Download
-buscand-thread-dwcancel-dialog = Deseja cancelar o download das planilhas?
+! TelaBuscaCandidato::actionImport
+buscand-import-dialog  = SisCand v.2.5 - Selecionar Planilhas
+buscand-import-clear   = Deseja excluir os arquivos importados anteriormente?
+buscand-import-error   = Falha ao importar arquivos!\n\
+                         Consulte os arquivos de tracing para mais informações.
 
 ! TelaBuscaCandidato::actionPrint
-buscand-action-print-thread  = SisCand v.2.0 - Thread de impressão de candidato
+buscand-action-print-thread  = SisCand v.2.5 - Thread de impressão de candidato
 buscand-action-print-loadMsg = Imprimindo dados do candidato selecionado...
-buscand-action-print-title   = SisCand v.2.0 - Imprimindo dados de candidato
+buscand-action-print-title   = SisCand v.2.5 - Imprimindo dados de candidato
 buscand-action-print-error   = Falha ao imprimir dados do candidato!\n\
                                Consulte os arquivos de tracing para mais informações.
 
 ! TelaBuscaCandidato::actionReport
-buscand-action-report-thread  = SisCand v.2.0 - Thread de visualização de candidato
+buscand-action-report-thread  = SisCand v.2.5 - Thread de visualização de candidato
 buscand-action-report-loadMsg = Gerando visualização...
-buscand-action-report-title   = SisCand v.2.0 - Visualizando candidato
+buscand-action-report-title   = SisCand v.2.5 - Visualizando candidato
 buscand-action-report-error   = Falha ao gerar visualização!\n\
                                 Consulte os arquivos de tracing para mais informações.
 
-! TelaBuscaCandidato::threadDownloadSheets
-buscand-thread-download-title = SisCand v.2.0 - Thread de download de planilhas
-buscand-thread-download-error = Falha ao baixar planilhas!\n\
-                                Talvez o endereço do servidor remoto não tenha sido definido.\n\
-                                Consulte os arquivos de tracing para mais informações.
-
-! TelaBuscaCandidato::threadDownloadSheets
-buscand-thread-download-title  = SisCand v.2.0 - Baixando novas planilhas
-buscand-thread-download-dialog = O sistema irá baixar novas planilhas do servidor e sobrescrever as planilhas baixadas anteriormente!\n\
-                                 Deseja prosseguir?
-
 ! TelaBuscaCandidato::threadLoadSheets
-buscand-thread-sheets-thead = SisCand v.2.0 - Thread de carregamento de planilhas
+buscand-thread-sheets-thead = SisCand v.2.5 - Thread de carregamento de planilhas
 buscand-thread-sheets-title = Carregando planilhas
 buscand-thread-sheets-error = Falha ao carregar planilhas!\n\
                               Consulte os arquivos de tracing para mais informações.
