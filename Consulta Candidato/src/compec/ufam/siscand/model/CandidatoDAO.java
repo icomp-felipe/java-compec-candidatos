@@ -10,8 +10,8 @@ import com.phill.libs.*;
 import com.phill.libs.files.*;
 
 /** Classe responsável pela extração de dados dos candidatos a partir das planilhas do Excel contidas em 'res/sheets'.
- *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0 - 22/FEV/2023 */
+ *  @author Felipe André - felipeandre.eng@gmail.com
+ *  @version 2.1 - 02/ABRV/2024 */
 public class CandidatoDAO {
 
 	private static final File sheets = ResourceManager.getResourceAsFile("sheets");
@@ -78,6 +78,8 @@ public class CandidatoDAO {
 		// Registrando a lista de candidatos no mapa
 		mapaCandidatos.put(concurso, listaCandidatos);
 		
+		// Desalocando recursos
+		workbook.close();
 	}
 	
 	/** Extrai os dados de um candidato de uma linha da tabela.
