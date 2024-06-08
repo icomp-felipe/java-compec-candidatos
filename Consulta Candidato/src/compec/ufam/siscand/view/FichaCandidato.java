@@ -17,8 +17,8 @@ import net.sf.jasperreports.engine.data.*;
 import net.sf.jasperreports.engine.util.*;
 
 /** Classe responsável pela geração do relatório 'Ficha de Candidato'.
- *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.0, 22/FEV/2023 */
+ *  @author Felipe André - felipeandre.eng@gmail.com
+ *  @version 2.0, 08/JUN/2024 */
 public class FichaCandidato {
 	
 	/** Exibe o relatório de 'Ficha de Colaborador' com os dados de um <code>colaborador</code>.
@@ -63,7 +63,7 @@ public class FichaCandidato {
 		
 		// Leitura dos arquivos
 		File     reportPath = ResourceManager.getResourceAsFile("relatorios/FichaCandidato.jasper");
-		BufferedImage  logo = ImageIO.read(ResourceManager.getResourceAsFile("img/logo.jpg"));
+		BufferedImage  logo = ImageIO.read(ResourceManager.getResourceAsFile("img/logo-landscape.png"));
 		JasperReport report = (JasperReport) JRLoader.loadObject(reportPath);
 		
 		// Preparação dos parâmetros
