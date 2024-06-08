@@ -63,7 +63,7 @@ public class FichaCandidato {
 		
 		// Leitura dos arquivos
 		File     reportPath = ResourceManager.getResourceAsFile("relatorios/FichaCandidato.jasper");
-		BufferedImage  logo = ImageIO.read(ResourceManager.getResourceAsFile("img/logo-landscape.png"));
+		BufferedImage  logo = ImageIO.read(ResourceManager.getResourceAsFile("img/logo-portrait.png"));
 		JasperReport report = (JasperReport) JRLoader.loadObject(reportPath);
 		
 		// Preparação dos parâmetros
