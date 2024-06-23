@@ -375,6 +375,7 @@ public class TelaSisCand extends JFrame {
 			for (File sheet: chooser.getSelectedFiles()) {
 				
 				File targetFile = new File(sheetsDir, sheet.getName());
+				targetFile.mkdirs();
 				
 				try {
 					
