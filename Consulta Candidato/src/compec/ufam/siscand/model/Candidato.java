@@ -8,7 +8,7 @@ import org.joda.time.*;
 import org.joda.time.format.*;
 
 /** Modelagem de um candidato.
- *  @author Felipe André - felipeandresouza@hotmail.com
+ *  @author Felipe André - felipeandre.eng@gmail.com
  *  @version 2.0 - 23/ABR/2023 */
 public class Candidato implements JTableRowData {
 	

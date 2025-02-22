@@ -25,8 +25,8 @@ import compec.ufam.siscand.model.*;
 import compec.ufam.siscand.utils.*;
 
 /** Classe que implementa a interface de busca e visualização de candidatos.
- *  @author Felipe André - felipeandresouza@hotmail.com
- *  @version 2.5, 08/JUL/2023 */
+ *  @author Felipe André - felipeandre.eng@gmail.com
+ *  @version 2.6, 22/FEV/2025 */
 public class TelaSisCand extends JFrame {
 
 	// Serial
@@ -144,14 +144,14 @@ public class TelaSisCand extends JFrame {
 		
 		checkPagoIsento = new JCheckBox("Somente pagos e isentos");
 		checkPagoIsento.setFont(fonte);
-		checkPagoIsento.addActionListener((event) -> actionBusca());
+		checkPagoIsento.addActionListener((_) -> actionBusca());
 		checkPagoIsento.setToolTipText(bundle.getString("hint-check-pago-isento"));
 		checkPagoIsento.setBounds(645, 55, 210, 25);
 		panelBusca.add(checkPagoIsento);
 		
 		buttonClear = new JButton(clearIcon);
 		buttonClear.setToolTipText(bundle.getString("hint-button-clear"));
-		buttonClear.addActionListener((event) -> utilClear());
+		buttonClear.addActionListener((_) -> utilClear());
 		buttonClear.setBounds(965, 55, 30, 25);
 		panelBusca.add(buttonClear);
 		
@@ -216,19 +216,19 @@ public class TelaSisCand extends JFrame {
 		getContentPane().add(labelInfos);
 		
 		buttonRefresh = new JButton(refreshIcon);
-		buttonRefresh.addActionListener((event) -> threadLoadSheets());
+		buttonRefresh.addActionListener((_) -> threadLoadSheets());
 		buttonRefresh.setToolTipText(bundle.getString("hint-button-refresh"));
 		buttonRefresh.setBounds(945, 635, 30, 25);
 		getContentPane().add(buttonRefresh);
 
 		bottonImport = new JButton(importIcon);
-		bottonImport.addActionListener((event) -> actionImport());
+		bottonImport.addActionListener((_) -> actionImport());
 		bottonImport.setToolTipText(bundle.getString("hint-button-import"));
 		bottonImport.setBounds(985, 635, 30, 25);
 		getContentPane().add(bottonImport);
 		
 		// Listeners dos campos de texto
-		DocumentListener docListener = (DocumentChangeListener) (event) -> actionBusca();
+		DocumentListener docListener = (DocumentChangeListener) (_) -> actionBusca();
 		
 		textNome.getDocument().addDocumentListener(docListener);
 		textCPF .getDocument().addDocumentListener(docListener);
@@ -239,7 +239,7 @@ public class TelaSisCand extends JFrame {
 		createPopupMenu();
 		threadLoadSheets();
 		
-		comboConcurso.addActionListener((event) -> actionBusca());
+		comboConcurso.addActionListener((_) -> actionBusca());
 		
 		setSize(1040, 710);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -261,10 +261,10 @@ public class TelaSisCand extends JFrame {
 		KeyStroke whatsapp   = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0);
 		
 		// Definindo ações dos itens de menu
-		Action actionVisualizar = new ShortcutAction("Visualizar (PDF)"          , KeyEvent.VK_V, visualizar, (event) -> actionReport  ());
-		Action actionImprimir   = new ShortcutAction("Imprimir diretamente"      , KeyEvent.VK_I, imprimir  , (event) -> actionPrint   ());
-		Action actionEmail      = new ShortcutAction("Enviar e-mail"             , KeyEvent.VK_E, email     , (event) -> actionEmail   ());
-		Action actionWhatsapp   = new ShortcutAction("Enviar mensagem (Whatsapp)", KeyEvent.VK_W, whatsapp  , (event) -> actionWhatsapp());
+		Action actionVisualizar = new ShortcutAction("Visualizar (PDF)"          , KeyEvent.VK_V, visualizar, (_) -> actionReport  ());
+		Action actionImprimir   = new ShortcutAction("Imprimir diretamente"      , KeyEvent.VK_I, imprimir  , (_) -> actionPrint   ());
+		Action actionEmail      = new ShortcutAction("Enviar e-mail"             , KeyEvent.VK_E, email     , (_) -> actionEmail   ());
+		Action actionWhatsapp   = new ShortcutAction("Enviar mensagem (Whatsapp)", KeyEvent.VK_W, whatsapp  , (_) -> actionWhatsapp());
 		
 		// Declarando os itens de menu
 		JMenuItem itemFicha = new JMenuItem(actionVisualizar);
