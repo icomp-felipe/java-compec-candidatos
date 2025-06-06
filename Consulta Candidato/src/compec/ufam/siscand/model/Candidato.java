@@ -1,20 +1,24 @@
 package compec.ufam.siscand.model;
 
-import com.phill.libs.*;
-import com.phill.libs.br.*;
-import com.phill.libs.table.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 
-import org.joda.time.*;
-import org.joda.time.format.*;
+import com.phill.libs.StringUtils;
+import com.phill.libs.br.CPFParser;
+import com.phill.libs.br.PhoneNumberUtils;
+import com.phill.libs.table.JTableRowData;
 
 /** Modelagem de um candidato.
  *  @author Felipe André - felipeandre.eng@gmail.com
- *  @version 2.0 - 23/ABR/2023 */
+ *  @version 2.1 - 06/JUN/2025 */
 public class Candidato implements JTableRowData {
 	
 	// Dados pessoais
 	private String nome, sexo, rg, rgUF, cpf;
-	private LocalDateTime dataNascimento;
+	private LocalDate dataNascimento;
 	private boolean temDeficiencia;
 	private String logradouro, numero, bairro, cep, cidade, uf;
 	private String telefone, email;
@@ -22,8 +26,19 @@ public class Candidato implements JTableRowData {
 	// Dados relativos à inscrição no concurso
 	private String concurso;
 	private int inscricao;
-	private DateTime dataInscricao;
+	private LocalDateTime dataInscricao;
 	private String curso, acaoAfirmativa, cidadeConcurso, situacaoPagamento;
+	
+	private final DateTimeFormatter formatter;
+	
+	{
+		
+		this.formatter = new DateTimeFormatterBuilder()
+	            .appendPattern("uuuu-MM-dd HH:mm:ss")
+	            .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
+	            .toFormatter();
+		
+	}
 	
 	/********************************************************************/
 	/********************* Setters de Identificação *********************/
@@ -62,7 +77,7 @@ public class Candidato implements JTableRowData {
 	/** Setter da data de nascimento do candidato.
 	 *  @param dataNascimento - data de nascimento do candidato */
 	public void setDataNascimento(final String dataNascimento) {
-		this.dataNascimento = DateTimeFormat.forPattern("ddMMyyyy").parseLocalDateTime(dataNascimento);
+		this.dataNascimento = LocalDate.parse(dataNascimento, DateTimeFormatter.ofPattern("ddMMyyyy"));
 	}
 	
 	/** Setter do sinalizador de condição especial (candidato)
@@ -138,7 +153,7 @@ public class Candidato implements JTableRowData {
 	/** Setter do timestamp de inscrição.
 	 *  @param dataInscricao - timestamp de criação da inscrição */
 	public void setDataInscricao(final String dataInscricao) {
-		this.dataInscricao = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").parseDateTime(dataInscricao);
+		this.dataInscricao = LocalDateTime.parse(dataInscricao, formatter);
 	}
 	
 	/** Setter do curso escolhido pelo candidato.
@@ -185,7 +200,8 @@ public class Candidato implements JTableRowData {
 	
 	/** @return Data de nascimento do candidato, no formato 'dd/MM/YYYY'. */
 	public String getNascimento() {
-		return this.dataNascimento.toString(DateTimeFormat.forPattern("dd/MM/YYYY"));
+		try { return this.dataNascimento.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")); }
+		catch (Exception exception) { return null; }
 	}
 	
 	/** @return Número de RG do candidato. */
@@ -245,7 +261,8 @@ public class Candidato implements JTableRowData {
 	
 	/** @return Data e hora da inscrição do candidato, no formato 'dd/MM/YYYY - HH:mm:ss'. */
 	public String getDataInscricao() {
-		return this.dataInscricao.toString(DateTimeFormat.forPattern("dd/MM/YYYY - HH:mm:ss"));
+		try { return this.dataInscricao.format(DateTimeFormatter.ofPattern("dd/MM/YYYY - HH:mm:ss")); }
+		catch (Exception exception) { return null; }
 	}
 	
 	/** @return Cidade de concurso do candidato. */
