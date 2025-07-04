@@ -2,6 +2,8 @@ package compec.ufam.siscand.view;
 
 import java.io.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.util.*;
 import java.util.List;
 import java.nio.file.*;
@@ -260,11 +262,30 @@ public class TelaSisCand extends JFrame {
 		KeyStroke email      = KeyStroke.getKeyStroke(KeyEvent.VK_E, 0);
 		KeyStroke whatsapp   = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0);
 		
+		KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK, false);
+		
 		// Definindo ações dos itens de menu
 		Action actionVisualizar = new ShortcutAction("Visualizar (PDF)"          , KeyEvent.VK_V, visualizar, (_) -> actionReport  ());
 		Action actionImprimir   = new ShortcutAction("Imprimir diretamente"      , KeyEvent.VK_I, imprimir  , (_) -> actionPrint   ());
 		Action actionEmail      = new ShortcutAction("Enviar e-mail"             , KeyEvent.VK_E, email     , (_) -> actionEmail   ());
 		Action actionWhatsapp   = new ShortcutAction("Enviar mensagem (Whatsapp)", KeyEvent.VK_W, whatsapp  , (_) -> actionWhatsapp());
+		
+		Action actionCopia = new AbstractAction() {
+			
+            private static final long serialVersionUID = -2280336203165725254L;
+
+			@Override
+            public void actionPerformed(ActionEvent e) {
+                int row = tableCandidatos.getSelectedRow();
+                int col = tableCandidatos.getSelectedColumn();
+                if (row != -1 && col != -1) {
+                    Object value = tableCandidatos.getValueAt(row, col);
+                    StringSelection selection = new StringSelection(value.toString());
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(selection, selection);
+                }
+            }
+		};
 		
 		// Declarando os itens de menu
 		JMenuItem itemFicha = new JMenuItem(actionVisualizar);
@@ -289,11 +310,13 @@ public class TelaSisCand extends JFrame {
 		imap.put(imprimir  , "actionImprimir"  );
 		imap.put(email     , "actionEmail"     );
 		imap.put(whatsapp  , "actionWhatsapp"  );
+		imap.put(copy      , "actionCopia"     );
 		
 		amap.put("actionVisualizar", actionVisualizar);
 		amap.put("actionImprimir"  , actionImprimir  );
 		amap.put("actionEmail"     , actionEmail     );
 		amap.put("actionWhatsapp"  , actionWhatsapp  );
+		amap.put("actionCopia"     , actionCopia     );
 		
 		// Atribuindo menu à tabela
 		tableCandidatos.setComponentPopupMenu(popupMenu);
