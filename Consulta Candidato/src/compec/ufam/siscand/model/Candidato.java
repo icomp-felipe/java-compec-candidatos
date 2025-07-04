@@ -1,10 +1,13 @@
 package compec.ufam.siscand.model;
 
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.phill.libs.StringUtils;
 import com.phill.libs.br.CPFParser;
@@ -311,19 +314,40 @@ public class Candidato implements JTableRowData {
 	 *  @param inscrito - filtra apenas por inscrição confirmada
 	 *  @return 'true' se e somente se os dados recebidos conferem com os contidos nessa instância. */
 	public boolean matches(final String nome, final String cpf, final String rg, final String concurso, final boolean inscrito) {
-		
-		if (inscrito && !inscricaoConfirmada())
-			return false;
-		
-		// Dados recebidos via parâmetro
-		String concursoAux  = concurso.equals("Todos") ? "" : concurso;
-		String compareRegex = String.format("%s.*-%s.*-%s.*-%s.*", concursoAux, nome.toUpperCase().replace("%",".*"), rg.replace("%",".*"), StringUtils.extractNumbers(cpf));
-		
-		// Dados da instância atual
-		String dados = String.format("%s-%s-%s-%s", this.concurso, this.nome, this.rg, this.cpf);
-		
-		return dados.matches(compareRegex);
+	    if (inscrito && !inscricaoConfirmada())
+	        return false;
+
+	    // Prepara filtros normalizados
+	    String concursoFiltro = concurso.equals("Todos") ? "" : concurso;
+	    String concursoRegex = Pattern.quote(normalizar(concursoFiltro)).replace("%", ".*");
+	    String nomeRegex = Pattern.quote(normalizar(nome)).replace("%", ".*");
+	    String rgRegex = Pattern.quote(normalizar(rg)).replace("%", ".*");
+	    String cpfNumeros = StringUtils.extractNumbers(cpf);
+
+	    // Monta regex final
+	    String regex = String.format("%s.*-%s.*-%s.*-%s.*", concursoRegex, nomeRegex, rgRegex, cpfNumeros);
+	    Pattern pattern = Pattern.compile(regex);
+
+	    // Normaliza dados da instância
+	    String concursoInstancia = normalizar(this.concurso);
+	    String nomeInstancia = normalizar(this.nome);
+	    String rgInstancia = normalizar(this.rg);
+	    String cpfInstancia = StringUtils.extractNumbers(this.cpf);
+
+	    String dados = String.format("%s-%s-%s-%s", concursoInstancia, nomeInstancia, rgInstancia, cpfInstancia);
+	    Matcher matcher = pattern.matcher(dados);
+
+	    return matcher.matches();
 	}
+
+	private String normalizar(String texto) {
+	    if (texto == null) return "";
+	    String n = Normalizer.normalize(texto, Normalizer.Form.NFD);
+	    return n.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+	            .replaceAll("[çÇ]", "c")
+	            .toLowerCase();
+	}
+
 	
 	@Override
 	public Object[] getRowData() {
