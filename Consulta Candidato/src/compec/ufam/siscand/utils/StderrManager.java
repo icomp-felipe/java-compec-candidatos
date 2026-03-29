@@ -1,8 +1,10 @@
 package compec.ufam.siscand.utils;
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import com.phill.libs.*;
-import com.phill.libs.time.*;
 import com.phill.libs.ui.AlertDialog;
 
 public class StderrManager extends OutputStream {
@@ -67,7 +69,7 @@ public class StderrManager extends OutputStream {
 	/** Cria o arquivo de debug */
 	private File getStackTraceFile() {
 		
-		String curdate  = PhillsDateUtils.now("dd.MM.yyyy_HH.mm.ss");
+		String curdate  = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy_HH.uu.ss"));
 		String filename = String.format("stackTrace_%s.txt",curdate);
 		File stackDir = ResourceManager.getResourceAsFile("tracing");
 		
