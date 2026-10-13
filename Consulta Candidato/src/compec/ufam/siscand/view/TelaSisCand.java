@@ -28,7 +28,7 @@ import compec.ufam.siscand.utils.*;
 
 /** Classe que implementa a interface de busca e visualização de candidatos.
  *  @author Felipe André - felipeandre.eng@gmail.com
- *  @version 2.6, 22/FEV/2025 */
+ *  @version 2.6, 12/OUT/2026 */
 public class TelaSisCand extends JFrame {
 
 	// Serial
@@ -390,7 +390,7 @@ public class TelaSisCand extends JFrame {
 		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 			
 			// Exibe o diálogo para limpar o diretório de planilhas
-			if (AlertDialog.dialog(this, getTitle(), bundle.getString("buscand-import-clear")) == AlertDialog.OK_OPTION)
+			if (sheetsDir.exists() && AlertDialog.dialog(this, getTitle(), bundle.getString("buscand-import-clear")) == AlertDialog.OK_OPTION)
 				for (File file: sheetsDir.listFiles())
 					file.delete();
 			
@@ -398,7 +398,7 @@ public class TelaSisCand extends JFrame {
 			for (File sheet: chooser.getSelectedFiles()) {
 				
 				File targetFile = new File(sheetsDir, sheet.getName());
-				targetFile.mkdirs();
+				sheetsDir.mkdirs();
 				
 				try {
 					
